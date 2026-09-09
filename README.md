@@ -37,6 +37,29 @@ When launching from an IDE, the equivalent Java VM option is:
 
 Tests use temporary database directories and do not modify the development database.
 
+To recreate the development database with the latest schema and demonstration data, close the application, delete `data/football_manager.db`, and launch the application again. Only delete this generated file when its saved development data is no longer needed.
+
+## Team and player persistence
+
+The current persistence layer provides repository interfaces with SQLite JDBC implementations for:
+
+- Creating, finding, listing, updating, and deleting teams and players
+- Case-insensitive team and player name searches
+- Filtering players by team, with an optional name search
+- Preserving records when the application reconnects to the same database
+
+Team names and short codes are unique without regard to letter case. Shirt numbers must be from 1 to 99 and are unique within a team. Foreign keys prevent players from referring to missing teams and prevent a team from being deleted while players still reference it. SQL values are passed through prepared statements.
+
+## Testing
+
+Run the complete automated suite with:
+
+```bash
+mvn clean test
+```
+
+Repository integration tests create isolated temporary databases. Current coverage includes domain input validation, CRUD, case-insensitive search, reconnect persistence, seed repeatability, uniqueness, shirt-number boundaries, foreign keys, and delete restrictions.
+
 ## Project structure
 
 ```text
@@ -63,4 +86,4 @@ The planned design introduces Strategy for genuinely different fixture-generatio
 
 ## Current status
 
-The foundation provides an enforced JDK/Maven build environment, application composition root, configurable database path, shared startup exceptions, six-screen navigation shell, SQLite initialization, seed data, and focused foundation tests. Feature screens currently show clear empty states until their workflows are implemented.
+The application currently provides its build and navigation foundation plus tested Team and Player domain models and SQLite repositories. Four demonstration teams and four players are seeded idempotently. Feature screens remain clear empty states until their workflows are implemented.

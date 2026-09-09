@@ -8,6 +8,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 class ApplicationContextTest {
     @TempDir
@@ -21,5 +22,7 @@ class ApplicationContextTest {
         context.initialize();
 
         assertTrue(Files.exists(databasePath));
+        assertNotNull(context.teamRepository());
+        assertNotNull(context.playerRepository());
     }
 }

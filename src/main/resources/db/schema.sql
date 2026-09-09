@@ -1,17 +1,17 @@
 CREATE TABLE IF NOT EXISTS teams (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL COLLATE NOCASE UNIQUE CHECK (length(trim(name)) > 0),
-    short_code TEXT NOT NULL COLLATE NOCASE UNIQUE CHECK (length(short_code) BETWEEN 2 AND 5),
-    coach_name TEXT,
+    name TEXT NOT NULL COLLATE NOCASE UNIQUE CHECK (length(name) > 0 AND name = trim(name)),
+    short_code TEXT NOT NULL COLLATE NOCASE UNIQUE CHECK (length(short_code) BETWEEN 2 AND 5 AND short_code = trim(short_code)),
+    coach_name TEXT CHECK (coach_name IS NULL OR (length(coach_name) > 0 AND coach_name = trim(coach_name))),
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS players (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     team_id INTEGER NOT NULL,
-    full_name TEXT NOT NULL CHECK (length(trim(full_name)) > 0),
+    full_name TEXT NOT NULL COLLATE NOCASE CHECK (length(full_name) > 0 AND full_name = trim(full_name)),
     shirt_number INTEGER NOT NULL CHECK (shirt_number BETWEEN 1 AND 99),
-    position TEXT,
+    position TEXT CHECK (position IS NULL OR (length(position) > 0 AND position = trim(position))),
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (team_id) REFERENCES teams(id) ON DELETE RESTRICT,
     UNIQUE (team_id, shirt_number)
