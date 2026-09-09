@@ -8,6 +8,7 @@ import com.footballmanager.application.exception.ValidationException;
 import com.footballmanager.domain.model.Team;
 import com.footballmanager.domain.model.Tournament;
 import com.footballmanager.domain.model.TournamentRegistration;
+import com.footballmanager.domain.state.TournamentStateResolver;
 import com.footballmanager.persistence.repository.TeamRepository;
 import com.footballmanager.persistence.repository.TournamentRegistrationRepository;
 import com.footballmanager.persistence.repository.TournamentRepository;
@@ -22,20 +23,31 @@ public final class TournamentRegistrationService {
     private final TournamentRepository tournamentRepository;
     private final TeamRepository teamRepository;
     private final TournamentRegistrationRepository registrationRepository;
+    private final TournamentStateResolver stateResolver;
 
     public TournamentRegistrationService(
             TournamentRepository tournamentRepository,
             TeamRepository teamRepository,
             TournamentRegistrationRepository registrationRepository
     ) {
+        this(tournamentRepository, teamRepository, registrationRepository, new TournamentStateResolver());
+    }
+
+    public TournamentRegistrationService(
+            TournamentRepository tournamentRepository,
+            TeamRepository teamRepository,
+            TournamentRegistrationRepository registrationRepository,
+            TournamentStateResolver stateResolver
+    ) {
         this.tournamentRepository = Objects.requireNonNull(tournamentRepository);
         this.teamRepository = Objects.requireNonNull(teamRepository);
         this.registrationRepository = Objects.requireNonNull(registrationRepository);
+        this.stateResolver = Objects.requireNonNull(stateResolver);
     }
 
     public List<RegisteredTeamDto> registerTeams(long tournamentId, List<TournamentRegistrationRequest> requests) {
         Tournament tournament = requireTournament(tournamentId);
-        TournamentService.requireDraft(tournament, "Teams can only be registered in a Draft tournament");
+        stateResolver.resolve(tournament.status()).ensureCanChangeRegistration();
         if (requests == null || requests.isEmpty()) {
             throw new ValidationException("At least one team registration is required");
         }
@@ -81,7 +93,7 @@ public final class TournamentRegistrationService {
 
     public void unregisterTeam(long tournamentId, long teamId) {
         Tournament tournament = requireTournament(tournamentId);
-        TournamentService.requireDraft(tournament, "Teams can only be removed from a Draft tournament");
+        stateResolver.resolve(tournament.status()).ensureCanChangeRegistration();
         requireTeam(teamId);
         registrationRepository.remove(tournamentId, teamId);
     }

@@ -64,7 +64,7 @@ Run the complete automated suite with:
 mvn clean test
 ```
 
-Repository integration tests create isolated temporary databases. Current coverage includes domain input validation, CRUD, case-insensitive search, reconnect persistence, seed repeatability, uniqueness, shirt-number boundaries, foreign keys, Draft-only tournament changes, ordered registration, relationship protection, safe deletion, and transactional rollback.
+Repository integration tests create isolated temporary databases. Current coverage includes domain input validation, CRUD, case-insensitive search, reconnect persistence, seed repeatability, uniqueness, shirt-number boundaries, foreign keys, ordered registration, relationship protection, safe deletion, transactional rollback, every State's permissions, format-specific team counts, fixture progress, and persisted lifecycle transitions.
 
 ## Project structure
 
@@ -88,8 +88,10 @@ src/main/java/com/footballmanager
 
 ## Design focus
 
-The planned design introduces Strategy for genuinely different fixture-generation algorithms, State for tournament lifecycle behavior, and Command for reversible match-result operations. Each pattern will be added with its corresponding feature so that the implementation is justified by a concrete need. Detailed architecture, diagrams, testing evidence, and pattern justifications will be added as those features are implemented.
+The State pattern now controls tournament lifecycle permissions and transitions through four concrete states. Its [class diagram and design justification](docs/architecture/design-patterns.md) use the implemented class names and explain the alternative considered.
+
+Strategy remains planned for genuinely different fixture-generation algorithms, and Command remains planned for reversible match-result operations. They will be introduced only with the features that require them.
 
 ## Current status
 
-The application currently provides its build and navigation foundation plus tested Team, Player, Tournament, and tournament-registration persistence. Tournament edits and registrations are limited to Draft through application services, and registration batches are transactional. Four demonstration teams and four players are seeded idempotently. Feature screens remain clear empty states until their workflows are implemented.
+The application currently provides its build and navigation foundation plus tested Team, Player, Tournament, and tournament-registration persistence. The State pattern enforces Draft editing and registration, format-specific registration closure, fixture-generation readiness, and completion after all fixtures finish. Registration batches remain transactional. Four demonstration teams and four players are seeded idempotently. Feature screens remain clear empty states until their workflows are implemented.
