@@ -50,6 +50,12 @@ The current persistence layer provides repository interfaces with SQLite JDBC im
 
 Team names and short codes are unique without regard to letter case. Shirt numbers must be from 1 to 99 and are unique within a team. Foreign keys prevent players from referring to missing teams and prevent a team from being deleted while players still reference it. SQL values are passed through prepared statements.
 
+## Tournament persistence and registration
+
+Tournament application services support creating, reading, searching, editing, and deleting tournaments. New tournaments start in Draft. Editing, deletion, registration, and unregistration are rejected after Draft until the dedicated lifecycle behavior is introduced.
+
+Teams can be registered in an explicit seed order. A team and seed number can each appear only once per tournament. Multi-team registration uses one database transaction, so a failed row rolls back the entire batch. Deleting a Draft tournament also removes its registrations, while deleting a registered team is restricted to protect relationships.
+
 ## Testing
 
 Run the complete automated suite with:
@@ -58,7 +64,7 @@ Run the complete automated suite with:
 mvn clean test
 ```
 
-Repository integration tests create isolated temporary databases. Current coverage includes domain input validation, CRUD, case-insensitive search, reconnect persistence, seed repeatability, uniqueness, shirt-number boundaries, foreign keys, and delete restrictions.
+Repository integration tests create isolated temporary databases. Current coverage includes domain input validation, CRUD, case-insensitive search, reconnect persistence, seed repeatability, uniqueness, shirt-number boundaries, foreign keys, Draft-only tournament changes, ordered registration, relationship protection, safe deletion, and transactional rollback.
 
 ## Project structure
 
@@ -86,4 +92,4 @@ The planned design introduces Strategy for genuinely different fixture-generatio
 
 ## Current status
 
-The application currently provides its build and navigation foundation plus tested Team and Player domain models and SQLite repositories. Four demonstration teams and four players are seeded idempotently. Feature screens remain clear empty states until their workflows are implemented.
+The application currently provides its build and navigation foundation plus tested Team, Player, Tournament, and tournament-registration persistence. Tournament edits and registrations are limited to Draft through application services, and registration batches are transactional. Four demonstration teams and four players are seeded idempotently. Feature screens remain clear empty states until their workflows are implemented.

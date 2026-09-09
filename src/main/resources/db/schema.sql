@@ -19,10 +19,10 @@ CREATE TABLE IF NOT EXISTS players (
 
 CREATE TABLE IF NOT EXISTS tournaments (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL COLLATE NOCASE UNIQUE CHECK (length(trim(name)) > 0),
+    name TEXT NOT NULL COLLATE NOCASE UNIQUE CHECK (length(name) > 0 AND name = trim(name)),
     format TEXT NOT NULL CHECK (format IN ('ROUND_ROBIN', 'KNOCKOUT')),
     status TEXT NOT NULL DEFAULT 'DRAFT' CHECK (status IN ('DRAFT', 'REGISTRATION_CLOSED', 'FIXTURES_GENERATED', 'COMPLETED')),
-    start_date TEXT NOT NULL,
+    start_date TEXT NOT NULL CHECK (date(start_date) IS NOT NULL AND start_date = date(start_date)),
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -62,4 +62,5 @@ CREATE TABLE IF NOT EXISTS matches (
 );
 
 CREATE INDEX IF NOT EXISTS idx_players_team ON players(team_id);
+CREATE INDEX IF NOT EXISTS idx_tournament_teams_team ON tournament_teams(team_id);
 CREATE INDEX IF NOT EXISTS idx_matches_tournament ON matches(tournament_id, round_number);
