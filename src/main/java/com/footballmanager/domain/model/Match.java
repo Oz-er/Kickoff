@@ -37,8 +37,11 @@ public record Match(
             throw new ValidationException("A team cannot play itself");
         }
         if (status == MatchStatus.PENDING
-                && (homeTeamId != null || awayTeamId != null || homeScore != null || awayScore != null)) {
-            throw new ValidationException("Pending matches cannot have teams or scores");
+                && homeTeamId != null && awayTeamId != null) {
+            throw new ValidationException("Pending matches cannot have both teams assigned");
+        }
+        if (status == MatchStatus.PENDING && (homeScore != null || awayScore != null)) {
+            throw new ValidationException("Pending matches cannot have scores");
         }
         if (status == MatchStatus.SCHEDULED
                 && (homeTeamId == null || awayTeamId == null || homeScore != null || awayScore != null)) {

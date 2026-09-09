@@ -4,6 +4,7 @@ import com.footballmanager.application.exception.DataIntegrityException;
 import com.footballmanager.application.exception.ValidationException;
 import com.footballmanager.domain.model.FixtureDraft;
 import com.footballmanager.domain.model.Match;
+import com.footballmanager.domain.model.MatchSnapshot;
 import com.footballmanager.domain.model.MatchStatus;
 import com.footballmanager.domain.model.NextMatchSlot;
 import com.footballmanager.domain.model.TournamentStatus;
@@ -264,5 +265,120 @@ public final class JdbcMatchRepository implements MatchRepository {
     private NextMatchSlot nullableSlot(ResultSet resultSet, String column) throws SQLException {
         String value = resultSet.getString(column);
         return value == null ? null : NextMatchSlot.valueOf(value);
+    }
+
+    @Override
+    public void recordResult(
+            long matchId,
+            int homeScore,
+            int awayScore,
+            Long nextMatchId,
+            NextMatchSlot nextMatchSlot,
+            Long progressedTeamId
+    ) {
+        try (Connection connection = databaseManager.openConnection()) {
+            connection.setAutoCommit(false);
+            try {
+                updateMatchResult(connection, matchId, homeScore, awayScore);
+                if (nextMatchId != null) {
+                    progressWinner(connection, nextMatchId, nextMatchSlot, progressedTeamId);
+                }
+                connection.commit();
+            } catch (SQLException | RuntimeException exception) {
+                JdbcRepositorySupport.rollback(connection, exception);
+                throw exception;
+            }
+        } catch (SQLException exception) {
+            throw JdbcRepositorySupport.translate("Recording the match result", exception);
+        }
+    }
+
+    @Override
+    public void undoResult(MatchSnapshot snapshot) {
+        try (Connection connection = databaseManager.openConnection()) {
+            connection.setAutoCommit(false);
+            try {
+                if (snapshot.nextMatchId() != null && snapshot.progressedTeamId() != null) {
+                    restoreNextMatch(connection, snapshot);
+                }
+                restoreMatch(connection, snapshot);
+                connection.commit();
+            } catch (SQLException | RuntimeException exception) {
+                JdbcRepositorySupport.rollback(connection, exception);
+                throw exception;
+            }
+        } catch (SQLException exception) {
+            throw JdbcRepositorySupport.translate("Undoing the match result", exception);
+        }
+    }
+
+    private void updateMatchResult(Connection connection, long matchId, int homeScore, int awayScore) throws SQLException {
+        String sql = "UPDATE matches SET home_score = ?, away_score = ?, status = ? WHERE id = ?";
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setInt(1, homeScore);
+            statement.setInt(2, awayScore);
+            statement.setString(3, MatchStatus.COMPLETED.name());
+            statement.setLong(4, matchId);
+            if (statement.executeUpdate() != 1) {
+                throw new SQLException("Match " + matchId + " was not updated");
+            }
+        }
+    }
+
+    private void progressWinner(Connection connection, long nextMatchId, NextMatchSlot slot, long winnerId) throws SQLException {
+        String column = slot == NextMatchSlot.HOME ? "home_team_id" : "away_team_id";
+        String otherColumn = slot == NextMatchSlot.HOME ? "away_team_id" : "home_team_id";
+        String sql = "UPDATE matches SET " + column + " = ?, "
+                + "status = CASE WHEN " + otherColumn + " IS NOT NULL THEN 'SCHEDULED' ELSE status END "
+                + "WHERE id = ?";
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setLong(1, winnerId);
+            statement.setLong(2, nextMatchId);
+            if (statement.executeUpdate() != 1) {
+                throw new SQLException("Next match " + nextMatchId + " was not updated");
+            }
+        }
+    }
+
+    private void restoreMatch(Connection connection, MatchSnapshot snapshot) throws SQLException {
+        String sql = "UPDATE matches SET home_score = ?, away_score = ?, status = ? WHERE id = ?";
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+            if (snapshot.homeScore() == null) {
+                statement.setNull(1, java.sql.Types.INTEGER);
+            } else {
+                statement.setInt(1, snapshot.homeScore());
+            }
+            if (snapshot.awayScore() == null) {
+                statement.setNull(2, java.sql.Types.INTEGER);
+            } else {
+                statement.setInt(2, snapshot.awayScore());
+            }
+            statement.setString(3, snapshot.status().name());
+            statement.setLong(4, snapshot.matchId());
+            if (statement.executeUpdate() != 1) {
+                throw new SQLException("Match " + snapshot.matchId() + " was not restored");
+            }
+        }
+    }
+
+    private void restoreNextMatch(Connection connection, MatchSnapshot snapshot) throws SQLException {
+        String sql = "UPDATE matches SET home_team_id = ?, away_team_id = ?, status = ? WHERE id = ?";
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+            if (snapshot.nextMatchPreviousHomeTeamId() == null) {
+                statement.setNull(1, java.sql.Types.INTEGER);
+            } else {
+                statement.setLong(1, snapshot.nextMatchPreviousHomeTeamId());
+            }
+            if (snapshot.nextMatchPreviousAwayTeamId() == null) {
+                statement.setNull(2, java.sql.Types.INTEGER);
+            } else {
+                statement.setLong(2, snapshot.nextMatchPreviousAwayTeamId());
+            }
+            statement.setString(3, snapshot.nextMatchPreviousStatus().name());
+            statement.setLong(4, snapshot.nextMatchId());
+            if (statement.executeUpdate() != 1) {
+                throw new SQLException("Next match " + snapshot.nextMatchId() + " was not restored");
+            }
+        }
     }
 }

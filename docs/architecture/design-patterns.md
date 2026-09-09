@@ -132,3 +132,81 @@ The scheduling algorithms are isolated and can be tested without SQLite. The app
 ### Future benefit
 
 A group-stage or double round-robin format can be added as another `ScheduleStrategy` and registered for its format. Existing algorithms, persistence code, and JavaFX controllers would not need to be rewritten.
+
+## Command: result recording and undo
+
+### Problem
+
+Recording a match result can require multiple database changes: updating the match scores and status, and for knockout tournaments, advancing the winner into the correct slot of the next match and potentially changing that match from Pending to Scheduled. A mistaken score entry should be reversible without duplicating rollback logic in every screen or service that records results.
+
+### Decision
+
+`RecordMatchResultCommand` encapsulates a single result-recording action. Before executing, it captures a `MatchSnapshot` of the current match state and, for knockout matches, the state of the next match. The `execute` method validates scores, rejects knockout draws, and delegates the transactional execution to `MatchRepository`. The `undo` method delegates the restoration of the match and any progressed next match from the snapshot back to `MatchRepository`. A command that fails validation or execution does not store a snapshot and is never added to history.
+
+`CommandHistory` stores only successfully executed commands in a last-in-first-out stack. `ResultService` creates each command, calls `execute`, and pushes it to the history only after success. Undo peeks the most recent command, calls its `undo` method, and pops it only after a successful rollback.
+
+```mermaid
+classDiagram
+    direction LR
+
+    class RecordMatchResultCommand {
+        -matchId long
+        -homeScore int
+        -awayScore int
+        -snapshot MatchSnapshot
+        -executed boolean
+        +execute() void
+        +undo() void
+        +isExecuted() boolean
+    }
+    class MatchSnapshot {
+        +matchId long
+        +homeScore Integer
+        +awayScore Integer
+        +status MatchStatus
+        +nextMatchId Long
+        +nextMatchSlot NextMatchSlot
+        +progressedTeamId Long
+        +nextMatchPreviousStatus MatchStatus
+        +nextMatchPreviousHomeTeamId Long
+        +nextMatchPreviousAwayTeamId Long
+    }
+    class CommandHistory {
+        -history Deque
+        +push(command) void
+        +undoLast() RecordMatchResultCommand
+        +hasHistory() boolean
+    }
+    class ResultService {
+        +recordResult(matchId, homeScore, awayScore) MatchDto
+        +correctResult(matchId, homeScore, awayScore) MatchDto
+        +undoLastResult() MatchDto
+        +canUndo() boolean
+    }
+    class MatchRepository {
+        <<interface>>
+        +findById(id) Optional~Match~
+        +findByTournamentId(tournamentId) List~Match~
+        +recordResult(matchId, homeScore, awayScore, nextMatchId, nextMatchSlot, progressedTeamId) void
+        +undoResult(snapshot) void
+    }
+
+    RecordMatchResultCommand --> MatchSnapshot
+    RecordMatchResultCommand --> MatchRepository
+    ResultService --> RecordMatchResultCommand
+    ResultService --> CommandHistory
+    ResultService --> MatchRepository
+    CommandHistory --> RecordMatchResultCommand
+```
+
+### Alternative considered
+
+The alternative was to have the service or controller directly update the match and next match through repository methods, keeping the previous values in local variables for manual rollback. This would scatter transaction management, validation, snapshot capture, and restoration across service methods and make testing the full execute-then-undo cycle difficult without duplicating setup.
+
+### Consequence
+
+Each result action becomes a self-contained object with its own validation, execution, snapshot, and undo. The service layer creates commands but does not manage transaction internals or snapshot details. The CommandHistory provides session-scoped undo without requiring database-level audit tables. The trade-off is additional classes, but each has a single clear responsibility.
+
+### Future benefit
+
+A correction audit log or redo capability can build on the existing command boundary. Each executed command already captures what changed and what was replaced, so persisting a history of corrections requires only serializing the commands and their snapshots.
