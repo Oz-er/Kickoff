@@ -1,5 +1,5 @@
 .root {
-    -fx-font-family: "Arial";
+    -fx-font-family: "System";
     -fx-background-color: #f5f7f8;
 }
 
@@ -9,21 +9,29 @@
     -fx-background-color: #153c2e;
 }
 
-.navigation .button {
+.navigation-button {
     -fx-alignment: center-left;
     -fx-background-color: transparent;
     -fx-text-fill: white;
     -fx-padding: 10 12;
+    -fx-background-radius: 7;
+    -fx-cursor: hand;
 }
 
-.navigation .button:hover {
+.navigation-button:hover,
+.navigation-button:selected {
     -fx-background-color: #245944;
 }
 
 .brand {
     -fx-text-fill: white;
-    -fx-font-size: 19;
+    -fx-font-size: 24;
     -fx-font-weight: bold;
+}
+
+.product-name {
+    -fx-text-fill: #bcd3ca;
+    -fx-font-size: 13;
     -fx-padding: 0 0 18 0;
 }
 
@@ -31,4 +39,33 @@
     -fx-font-size: 28;
     -fx-font-weight: bold;
     -fx-text-fill: #153c2e;
+}
+
+.page-subtitle {
+    -fx-font-size: 14;
+    -fx-text-fill: #61716a;
+}
+
+.page-content {
+    -fx-background-color: #f5f7f8;
+}
+
+.empty-state {
+    -fx-padding: 48;
+    -fx-background-color: white;
+    -fx-background-radius: 12;
+    -fx-border-color: #dfe7e3;
+    -fx-border-radius: 12;
+}
+
+.empty-state-title {
+    -fx-font-size: 18;
+    -fx-font-weight: bold;
+    -fx-text-fill: #2c3e36;
+}
+
+.empty-state-message {
+    -fx-text-fill: #61716a;
+    -fx-text-alignment: center;
+    -fx-max-width: 420;
 }

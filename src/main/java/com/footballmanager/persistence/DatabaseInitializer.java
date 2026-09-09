@@ -1,5 +1,7 @@
 package com.footballmanager.persistence;
 
+import com.footballmanager.application.exception.DatabaseException;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -17,11 +19,16 @@ public final class DatabaseInitializer {
     public void initialize() {
         try (Connection connection = databaseManager.openConnection()) {
             connection.setAutoCommit(false);
-            executeScript(connection, "/db/schema.sql");
-            executeScript(connection, "/db/seed.sql");
-            connection.commit();
+            try {
+                executeScript(connection, "/db/schema.sql");
+                executeScript(connection, "/db/seed.sql");
+                connection.commit();
+            } catch (SQLException | RuntimeException exception) {
+                rollback(connection, exception);
+                throw exception;
+            }
         } catch (SQLException exception) {
-            throw new IllegalStateException("Could not initialize the database", exception);
+            throw new DatabaseException("Could not initialize the database", exception);
         }
     }
 
@@ -39,11 +46,19 @@ public final class DatabaseInitializer {
     private String readResource(String resource) {
         try (InputStream input = DatabaseInitializer.class.getResourceAsStream(resource)) {
             if (input == null) {
-                throw new IllegalStateException("Missing database resource: " + resource);
+                throw new DatabaseException("Missing database resource: " + resource);
             }
             return new String(input.readAllBytes(), StandardCharsets.UTF_8);
         } catch (IOException exception) {
-            throw new IllegalStateException("Could not read database resource: " + resource, exception);
+            throw new DatabaseException("Could not read database resource: " + resource, exception);
+        }
+    }
+
+    private void rollback(Connection connection, Exception originalException) {
+        try {
+            connection.rollback();
+        } catch (SQLException rollbackException) {
+            originalException.addSuppressed(rollbackException);
         }
     }
 }
