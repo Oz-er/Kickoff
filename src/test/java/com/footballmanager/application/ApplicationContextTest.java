@@ -29,6 +29,8 @@ class ApplicationContextTest {
         assertNotNull(context.matchProgressRepository());
         assertNotNull(context.matchRepository());
         assertNotNull(context.tournamentService());
+        assertNotNull(context.teamService());
+        assertNotNull(context.playerService());
         assertNotNull(context.tournamentRegistrationService());
         assertNotNull(context.tournamentLifecycleService());
         assertNotNull(context.schedulingService());
