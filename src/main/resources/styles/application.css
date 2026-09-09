@@ -1,8 +1,20 @@
 .root {
-    -fx-font-family: "Helvetica Neue", "Arial", sans-serif;
-    -fx-font-size: 13px;
+    -fx-font-family: "Arial";
+    -fx-font-size: 14px;
+    -fx-base: #ffffff;
+    -fx-background: #f7f7f8;
+    -fx-control-inner-background: #ffffff;
+    -fx-text-base-color: #151515;
+    -fx-text-background-color: #151515;
+    -fx-accent: #002fa7;
+    -fx-focus-color: #002fa7;
     -fx-background-color: #f7f7f8;
     -fx-text-fill: #151515;
+}
+
+.label {
+    -fx-text-fill: #151515;
+    -fx-font-weight: 500;
 }
 
 .navigation {
@@ -38,8 +50,9 @@
 }
 
 .product-name {
-    -fx-text-fill: #a8a8a8;
+    -fx-text-fill: #e4e4e7;
     -fx-font-size: 12px;
+    -fx-font-weight: 500;
     -fx-padding: 0 0 22 0;
 }
 
@@ -51,7 +64,8 @@
 
 .page-subtitle {
     -fx-font-size: 14px;
-    -fx-text-fill: #5d5d63;
+    -fx-text-fill: #3f3f46;
+    -fx-font-weight: 500;
 }
 
 .page-content {
@@ -74,7 +88,8 @@
 }
 
 .empty-state-message {
-    -fx-text-fill: #5d5d63;
+    -fx-text-fill: #3f3f46;
+    -fx-font-weight: 500;
     -fx-text-alignment: center;
     -fx-max-width: 420;
 }
@@ -100,9 +115,31 @@
 }
 
 .button {
+    -fx-background-color: white;
+    -fx-text-fill: #151515;
+    -fx-border-color: #8d8d93;
+    -fx-border-width: 1;
     -fx-padding: 8 14;
     -fx-font-weight: bold;
     -fx-cursor: hand;
+}
+
+.button:hover {
+    -fx-border-color: #002fa7;
+    -fx-text-fill: #002fa7;
+}
+
+.navigation .navigation-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: #d7d7d7;
+    -fx-border-color: transparent;
+}
+
+.navigation .navigation-button:hover,
+.navigation .navigation-button:selected {
+    -fx-background-color: #002fa7;
+    -fx-text-fill: white;
+    -fx-border-color: #002fa7;
 }
 
 .primary-button {
@@ -113,6 +150,7 @@
 
 .primary-button:hover {
     -fx-background-color: #002477;
+    -fx-text-fill: white;
 }
 
 .secondary-button,
@@ -139,6 +177,35 @@
     -fx-border-color: #9d9da3;
     -fx-border-width: 1;
     -fx-padding: 7 9;
+}
+
+.text-field,
+.date-picker .text-field,
+.combo-box .list-cell {
+    -fx-text-fill: #151515;
+    -fx-prompt-text-fill: #4b4b52;
+    -fx-font-weight: 500;
+}
+
+.combo-box .list-cell {
+    -fx-background-color: transparent;
+}
+
+.combo-box-popup .list-view {
+    -fx-background-color: white;
+    -fx-border-color: #9d9da3;
+    -fx-border-width: 1;
+}
+
+.combo-box-popup .list-cell {
+    -fx-background-color: white;
+    -fx-text-fill: #151515;
+}
+
+.combo-box-popup .list-cell:filled:hover,
+.combo-box-popup .list-cell:filled:selected {
+    -fx-background-color: #dce5ff;
+    -fx-text-fill: #111111;
 }
 
 .text-field:focused,
@@ -185,12 +252,80 @@
     -fx-cell-size: 42px;
 }
 
+.table-cell {
+    -fx-text-fill: #151515;
+    -fx-font-size: 14px;
+    -fx-font-weight: 500;
+}
+
 .table-row-cell:selected {
     -fx-background-color: #dce5ff;
 }
 
 .table-row-cell:selected .text {
     -fx-fill: #111111;
+}
+
+.list-view {
+    -fx-background-color: white;
+    -fx-border-color: #d8d8dc;
+    -fx-border-width: 1;
+}
+
+.list-cell {
+    -fx-background-color: white;
+    -fx-text-fill: #151515;
+    -fx-font-weight: 500;
+}
+
+.list-cell:filled:hover {
+    -fx-background-color: #ececee;
+    -fx-text-fill: #151515;
+}
+
+.list-cell:filled:selected {
+    -fx-background-color: #002fa7;
+    -fx-text-fill: white;
+}
+
+.text-area {
+    -fx-text-fill: #151515;
+    -fx-prompt-text-fill: #4b4b52;
+    -fx-font-weight: 500;
+    -fx-background-color: white;
+    -fx-border-color: #9d9da3;
+    -fx-border-width: 1;
+}
+
+.text-area .content {
+    -fx-background-color: white;
+}
+
+.card,
+.stat-card {
+    -fx-background-color: white;
+    -fx-border-color: #d8d8dc;
+    -fx-border-width: 1;
+}
+
+.section-title,
+.stat-card-title {
+    -fx-text-fill: #151515;
+    -fx-font-weight: bold;
+}
+
+.section-title {
+    -fx-font-size: 18px;
+}
+
+.stat-card-title {
+    -fx-font-size: 12px;
+}
+
+.stat-card-value {
+    -fx-text-fill: #002fa7;
+    -fx-font-size: 28px;
+    -fx-font-weight: bold;
 }
 
 .dialog-pane {
@@ -203,4 +338,49 @@
     -fx-background-color: white;
     -fx-border-color: transparent transparent #d8d8dc transparent;
     -fx-border-width: 0 0 1 0;
+}
+
+.dialog-pane .label,
+.dialog-pane .header-panel .label {
+    -fx-text-fill: #151515;
+}
+
+.label .text,
+.table-cell .text,
+.list-cell .text,
+.text-field .text,
+.text-area .text,
+.combo-box .list-cell .text {
+    -fx-fill: #151515;
+}
+
+.brand .text,
+.navigation .navigation-button .text,
+.navigation .navigation-button:hover .text,
+.navigation .navigation-button:selected .text,
+.primary-button .text,
+.primary-button:hover .text,
+.list-cell:filled:selected .text {
+    -fx-fill: white;
+}
+
+.product-name .text {
+    -fx-fill: #e4e4e7;
+}
+
+.page-subtitle .text,
+.empty-state-message .text {
+    -fx-fill: #3f3f46;
+}
+
+.button:hover .text,
+.secondary-button:hover .text,
+.danger-button:hover .text {
+    -fx-fill: #002fa7;
+}
+
+.table-row-cell:selected .table-cell .text,
+.combo-box-popup .list-cell:filled:hover .text,
+.combo-box-popup .list-cell:filled:selected .text {
+    -fx-fill: #111111;
 }
