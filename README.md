@@ -50,6 +50,10 @@ The current persistence layer provides repository interfaces with SQLite JDBC im
 
 Team names and short codes are unique without regard to letter case. Shirt numbers must be from 1 to 99 and are unique within a team. Foreign keys prevent players from referring to missing teams and prevent a team from being deleted while players still reference it. SQL values are passed through prepared statements.
 
+## Team and player screens
+
+The Teams and Players navigation entries open working JavaFX management screens. Both support adding, editing, confirmed deletion, live case-insensitive search, useful empty results, and visible record counts. Players can also be filtered by team. Validation and relationship failures are shown as concise messages without exposing stack traces or SQL details.
+
 ## Tournament persistence and registration
 
 Tournament application services support creating, reading, searching, editing, and deleting tournaments. New tournaments start in Draft. The State pattern rejects editing, deletion, registration, and unregistration after Draft.
@@ -66,7 +70,9 @@ mvn clean test
 
 Repository integration tests create isolated temporary databases. Current coverage includes domain input validation, CRUD, case-insensitive search, reconnect persistence, seed repeatability, uniqueness, shirt-number boundaries, foreign keys, ordered registration, relationship protection, safe deletion, transactional rollback, every State's permissions, format-specific team counts, fixture progress, and persisted lifecycle transitions.
 
-Scheduling tests additionally cover odd and even round robins, unique pairings, deterministic seed ordering, four-team and eight-team knockout brackets, pending future rounds, winner-to-slot links, preview safety, duplicate prevention, and rollback when a match or status update fails.
+Scheduling tests additionally cover odd and even round robins, unique pairings, deterministic seed ordering, four-team and eight-team knockout brackets, pending future rounds, winner-to-slot links, preview safety, duplicate prevention, and rollback when a match or status update fails. View-model tests verify Team and Player filtering and refresh behavior, while error-message tests verify that unexpected technical details stay hidden.
+
+Use the [manual UI checklist](docs/testing/manual-ui-checklist.md) for desktop interaction checks. The [Omer-to-Rubaiyat handoff](docs/handoff/omer-to-rubaiyat.md) summarizes completed behavior, important classes, database recreation, verification, and known limitations.
 
 ## Project structure
 
@@ -81,12 +87,10 @@ src/main/java/com/footballmanager
 
 ## Planned capabilities
 
-- Team, player, and tournament management
+- Tournament management screens
 - Tournament workflow screens for fixture generation
-- Tournament lifecycle validation
 - Match-result recording, correction, and undo
 - League standings, knockout progression, search, and summary reports
-- Persistent SQLite storage with reproducible schema and seed data
 
 ## Design focus
 
@@ -96,4 +100,4 @@ Command remains planned for reversible match-result operations and will be intro
 
 ## Current status
 
-The application currently provides its build and navigation foundation plus tested Team, Player, Tournament, registration, and Match persistence. State enforces lifecycle behavior, while Strategy previews and atomically saves round-robin or knockout schedules with explicit progression links. Registration and schedule generation are transactional. Four demonstration teams and four players are seeded idempotently. Feature screens remain clear empty states until their workflows are implemented.
+The application currently provides functional Team and Player screens plus tested Tournament, registration, and Match application and persistence layers. State enforces lifecycle behavior, while Strategy previews and atomically saves round-robin or knockout schedules with explicit progression links. Registration and schedule generation are transactional. Four demonstration teams and four players are seeded idempotently. The remaining four screens stay as clear empty states until their workflows are implemented.

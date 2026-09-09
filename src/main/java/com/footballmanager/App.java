@@ -31,7 +31,7 @@ public final class App extends Application {
         try {
             ApplicationContext context = ApplicationContext.createDefault();
             context.initialize();
-            return new MainView();
+            return new MainView(context);
         } catch (ApplicationException exception) {
             return createStartupFailure(exception.getMessage());
         }

@@ -55,7 +55,7 @@ CREATE TABLE IF NOT EXISTS matches (
     CHECK (home_team_id IS NULL OR away_team_id IS NULL OR home_team_id <> away_team_id),
     CHECK ((next_match_id IS NULL AND next_match_slot IS NULL) OR (next_match_id IS NOT NULL AND next_match_slot IS NOT NULL)),
     CHECK (
-        (status = 'PENDING' AND home_team_id IS NULL AND away_team_id IS NULL AND home_score IS NULL AND away_score IS NULL)
+        (status = 'PENDING' AND (home_team_id IS NULL OR away_team_id IS NULL) AND home_score IS NULL AND away_score IS NULL)
         OR (status = 'SCHEDULED' AND home_team_id IS NOT NULL AND away_team_id IS NOT NULL AND home_score IS NULL AND away_score IS NULL)
         OR (status = 'COMPLETED' AND home_team_id IS NOT NULL AND away_team_id IS NOT NULL AND home_score IS NOT NULL AND away_score IS NOT NULL)
     )

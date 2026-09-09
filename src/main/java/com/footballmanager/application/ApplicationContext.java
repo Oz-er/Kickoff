@@ -4,6 +4,8 @@ import com.footballmanager.application.scheduling.SchedulingService;
 import com.footballmanager.application.service.TournamentLifecycleService;
 import com.footballmanager.application.service.TournamentRegistrationService;
 import com.footballmanager.application.service.TournamentService;
+import com.footballmanager.application.service.TeamService;
+import com.footballmanager.application.service.PlayerService;
 import com.footballmanager.config.ApplicationConfig;
 import com.footballmanager.config.ApplicationConfigLoader;
 import com.footballmanager.domain.state.TournamentStateResolver;
@@ -38,6 +40,8 @@ public final class ApplicationContext {
     private final MatchProgressRepository matchProgressRepository;
     private final MatchRepository matchRepository;
     private final TournamentService tournamentService;
+    private final TeamService teamService;
+    private final PlayerService playerService;
     private final TournamentRegistrationService tournamentRegistrationService;
     private final TournamentLifecycleService tournamentLifecycleService;
     private final SchedulingService schedulingService;
@@ -48,6 +52,8 @@ public final class ApplicationContext {
         this.databaseInitializer = new DatabaseInitializer(databaseManager);
         this.teamRepository = new JdbcTeamRepository(databaseManager);
         this.playerRepository = new JdbcPlayerRepository(databaseManager);
+        this.teamService = new TeamService(teamRepository);
+        this.playerService = new PlayerService(playerRepository, teamRepository);
         this.tournamentRepository = new JdbcTournamentRepository(databaseManager);
         this.tournamentRegistrationRepository = new JdbcTournamentRegistrationRepository(databaseManager);
         this.matchProgressRepository = new JdbcMatchProgressRepository(databaseManager);
@@ -118,6 +124,14 @@ public final class ApplicationContext {
 
     public TournamentService tournamentService() {
         return tournamentService;
+    }
+
+    public TeamService teamService() {
+        return teamService;
+    }
+
+    public PlayerService playerService() {
+        return playerService;
     }
 
     public TournamentRegistrationService tournamentRegistrationService() {
