@@ -1,74 +1,50 @@
 package com.footballmanager;
 
-import com.footballmanager.persistence.DatabaseInitializer;
-import com.footballmanager.persistence.DatabaseManager;
+import com.footballmanager.application.ApplicationContext;
+import com.footballmanager.application.exception.ApplicationException;
+import com.footballmanager.ui.view.MainView;
 import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
-import java.nio.file.Path;
-import java.util.List;
-
 public final class App extends Application {
-    private final Label pageTitle = new Label();
+    private static final double DEFAULT_WIDTH = 1100;
+    private static final double DEFAULT_HEIGHT = 720;
+    private static final double MINIMUM_WIDTH = 900;
+    private static final double MINIMUM_HEIGHT = 600;
 
     @Override
     public void start(Stage stage) {
-        DatabaseManager databaseManager = new DatabaseManager(Path.of("data", "football_manager.db"));
-        new DatabaseInitializer(databaseManager).initialize();
-
-        BorderPane root = new BorderPane();
-        root.setLeft(createNavigation());
-        root.setCenter(createWelcomePanel());
-
-        Scene scene = new Scene(root, 1100, 720);
+        Scene scene = new Scene(createRoot(), DEFAULT_WIDTH, DEFAULT_HEIGHT);
         scene.getStylesheets().add(App.class.getResource("/styles/application.css").toExternalForm());
         stage.setTitle("Football Tournament Manager");
-        stage.setMinWidth(900);
-        stage.setMinHeight(600);
+        stage.setMinWidth(MINIMUM_WIDTH);
+        stage.setMinHeight(MINIMUM_HEIGHT);
         stage.setScene(scene);
         stage.show();
     }
 
-    private VBox createNavigation() {
-        VBox navigation = new VBox(8);
-        navigation.getStyleClass().add("navigation");
-        Label brand = new Label("Tournament Manager");
-        brand.getStyleClass().add("brand");
-        navigation.getChildren().add(brand);
-        List<String> destinations = List.of(
-                "Dashboard",
-                "Teams",
-                "Players",
-                "Tournaments",
-                "Fixtures & Results",
-                "Standings & Reports"
-        );
-        for (String destination : destinations) {
-            Button button = new Button(destination);
-            button.setMaxWidth(Double.MAX_VALUE);
-            button.setOnAction(event -> showPlaceholder(destination));
-            navigation.getChildren().add(button);
+    private javafx.scene.Parent createRoot() {
+        try {
+            ApplicationContext context = ApplicationContext.createDefault();
+            context.initialize();
+            return new MainView();
+        } catch (ApplicationException exception) {
+            return createStartupFailure(exception.getMessage());
         }
-        return navigation;
     }
 
-    private VBox createWelcomePanel() {
-        pageTitle.setText("Dashboard");
-        pageTitle.getStyleClass().add("page-title");
-        Label message = new Label("The starter is ready. Follow prompt.md to build each feature in order.");
-        VBox panel = new VBox(12, pageTitle, message);
+    private VBox createStartupFailure(String message) {
+        Label title = new Label("Application could not start");
+        title.getStyleClass().add("page-title");
+        Label detail = new Label(message);
+        detail.setWrapText(true);
+        VBox panel = new VBox(12, title, detail);
         panel.setPadding(new Insets(32));
         return panel;
-    }
-
-    private void showPlaceholder(String destination) {
-        pageTitle.setText(destination);
     }
 
     public static void main(String[] args) {
