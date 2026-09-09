@@ -1,0 +1,10 @@
+target/
+.m2-cache/
+.idea/
+.vscode/
+*.iml
+.DS_Store
+data/*.db
+data/*.db-shm
+data/*.db-wal
+out/

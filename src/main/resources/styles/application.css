@@ -1,0 +1,34 @@
+.root {
+    -fx-font-family: "Arial";
+    -fx-background-color: #f5f7f8;
+}
+
+.navigation {
+    -fx-padding: 24;
+    -fx-pref-width: 230;
+    -fx-background-color: #153c2e;
+}
+
+.navigation .button {
+    -fx-alignment: center-left;
+    -fx-background-color: transparent;
+    -fx-text-fill: white;
+    -fx-padding: 10 12;
+}
+
+.navigation .button:hover {
+    -fx-background-color: #245944;
+}
+
+.brand {
+    -fx-text-fill: white;
+    -fx-font-size: 19;
+    -fx-font-weight: bold;
+    -fx-padding: 0 0 18 0;
+}
+
+.page-title {
+    -fx-font-size: 28;
+    -fx-font-weight: bold;
+    -fx-text-fill: #153c2e;
+}
