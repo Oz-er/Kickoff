@@ -3,11 +3,10 @@ package com.footballmanager.application.service;
 import com.footballmanager.application.dto.CreateTournamentRequest;
 import com.footballmanager.application.dto.TournamentDto;
 import com.footballmanager.application.dto.UpdateTournamentRequest;
-import com.footballmanager.application.exception.BusinessRuleException;
 import com.footballmanager.application.exception.EntityNotFoundException;
 import com.footballmanager.application.exception.ValidationException;
 import com.footballmanager.domain.model.Tournament;
-import com.footballmanager.domain.model.TournamentStatus;
+import com.footballmanager.domain.state.TournamentStateResolver;
 import com.footballmanager.persistence.repository.TournamentRepository;
 
 import java.util.List;
@@ -16,9 +15,15 @@ import java.util.Optional;
 
 public final class TournamentService {
     private final TournamentRepository tournamentRepository;
+    private final TournamentStateResolver stateResolver;
 
     public TournamentService(TournamentRepository tournamentRepository) {
+        this(tournamentRepository, new TournamentStateResolver());
+    }
+
+    public TournamentService(TournamentRepository tournamentRepository, TournamentStateResolver stateResolver) {
         this.tournamentRepository = Objects.requireNonNull(tournamentRepository);
+        this.stateResolver = Objects.requireNonNull(stateResolver);
     }
 
     public TournamentDto create(CreateTournamentRequest request) {
@@ -48,7 +53,7 @@ public final class TournamentService {
             throw new ValidationException("Tournament details are required");
         }
         Tournament current = requireTournament(id);
-        requireDraft(current, "Only a Draft tournament can be edited");
+        stateResolver.resolve(current.status()).ensureCanEdit();
         Tournament updated = new Tournament(
                 current.id(),
                 request.name(),
@@ -63,7 +68,7 @@ public final class TournamentService {
     public void delete(long id) {
         requirePositiveId(id);
         Tournament current = requireTournament(id);
-        requireDraft(current, "Only a Draft tournament can be deleted");
+        stateResolver.resolve(current.status()).ensureCanDelete();
         tournamentRepository.deleteById(id);
     }
 
@@ -71,12 +76,6 @@ public final class TournamentService {
         requirePositiveId(id);
         return tournamentRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Tournament " + id + " was not found"));
-    }
-
-    static void requireDraft(Tournament tournament, String message) {
-        if (tournament.status() != TournamentStatus.DRAFT) {
-            throw new BusinessRuleException(message);
-        }
     }
 
     private void requirePositiveId(long id) {
