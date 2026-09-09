@@ -90,6 +90,38 @@ public final class JdbcMatchRepository implements MatchRepository {
     }
 
     @Override
+    public List<Match> findUpcoming(Long tournamentId, int limit) {
+        if (tournamentId != null) {
+            JdbcRepositorySupport.requirePositiveId(tournamentId, "Tournament id");
+        }
+        if (limit <= 0) {
+            throw new com.footballmanager.application.exception.ValidationException("Limit must be positive");
+        }
+        String sql = "SELECT " + COLUMNS + " FROM matches WHERE status = 'SCHEDULED'";
+        if (tournamentId != null) {
+            sql += " AND tournament_id = ?";
+        }
+        sql += " ORDER BY id LIMIT ?";
+        try (Connection connection = databaseManager.openConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            int paramIndex = 1;
+            if (tournamentId != null) {
+                statement.setLong(paramIndex++, tournamentId);
+            }
+            statement.setInt(paramIndex, limit);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                List<Match> matches = new ArrayList<>();
+                while (resultSet.next()) {
+                    matches.add(map(resultSet));
+                }
+                return List.copyOf(matches);
+            }
+        } catch (SQLException exception) {
+            throw JdbcRepositorySupport.translate("Loading upcoming matches", exception);
+        }
+    }
+
+    @Override
     public void saveScheduleAndTransition(
             long tournamentId,
             TournamentStatus expectedStatus,

@@ -14,6 +14,8 @@ public interface TeamRepository {
 
     List<Team> searchByName(String query);
 
+    long count();
+
     Team update(Team team);
 
     void deleteById(long id);

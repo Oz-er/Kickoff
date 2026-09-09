@@ -16,6 +16,8 @@ public interface MatchRepository {
 
     boolean existsForTournament(long tournamentId);
 
+    List<Match> findUpcoming(Long tournamentId, int limit);
+
     void saveScheduleAndTransition(
             long tournamentId,
             TournamentStatus expectedStatus,
