@@ -84,6 +84,21 @@ public final class JdbcPlayerRepository implements PlayerRepository {
     }
 
     @Override
+    public long count() {
+        String sql = "SELECT COUNT(*) FROM players";
+        try (Connection connection = databaseManager.openConnection();
+             PreparedStatement statement = connection.prepareStatement(sql);
+             ResultSet resultSet = statement.executeQuery()) {
+            if (resultSet.next()) {
+                return resultSet.getLong(1);
+            }
+            return 0;
+        } catch (SQLException exception) {
+            throw JdbcRepositorySupport.translate("Counting players", exception);
+        }
+    }
+
+    @Override
     public Player update(Player player) {
         requireStoredPlayer(player);
         String sql = "UPDATE players SET team_id = ?, full_name = ?, shirt_number = ?, position = ? WHERE id = ?";

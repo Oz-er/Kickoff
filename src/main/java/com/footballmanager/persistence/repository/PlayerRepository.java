@@ -18,6 +18,8 @@ public interface PlayerRepository {
 
     List<Player> searchByTeamIdAndName(long teamId, String query);
 
+    long count();
+
     Player update(Player player);
 
     void deleteById(long id);

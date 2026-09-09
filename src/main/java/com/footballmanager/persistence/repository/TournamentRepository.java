@@ -14,6 +14,8 @@ public interface TournamentRepository {
 
     List<Tournament> searchByName(String query);
 
+    long count();
+
     Tournament update(Tournament tournament);
 
     void deleteById(long id);

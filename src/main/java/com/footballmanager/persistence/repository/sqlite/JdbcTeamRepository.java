@@ -86,6 +86,21 @@ public final class JdbcTeamRepository implements TeamRepository {
     }
 
     @Override
+    public long count() {
+        String sql = "SELECT COUNT(*) FROM teams";
+        try (Connection connection = databaseManager.openConnection();
+             PreparedStatement statement = connection.prepareStatement(sql);
+             ResultSet resultSet = statement.executeQuery()) {
+            if (resultSet.next()) {
+                return resultSet.getLong(1);
+            }
+            return 0;
+        } catch (SQLException exception) {
+            throw JdbcRepositorySupport.translate("Counting teams", exception);
+        }
+    }
+
+    @Override
     public Team update(Team team) {
         requireStoredTeam(team);
         String sql = "UPDATE teams SET name = ?, short_code = ?, coach_name = ? WHERE id = ?";

@@ -6,6 +6,7 @@ import com.footballmanager.application.service.TournamentRegistrationService;
 import com.footballmanager.application.service.TournamentService;
 import com.footballmanager.application.service.TeamService;
 import com.footballmanager.application.service.PlayerService;
+import com.footballmanager.application.service.ReportService;
 import com.footballmanager.application.service.ResultService;
 import com.footballmanager.config.ApplicationConfig;
 import com.footballmanager.config.ApplicationConfigLoader;
@@ -47,6 +48,7 @@ public final class ApplicationContext {
     private final TournamentLifecycleService tournamentLifecycleService;
     private final SchedulingService schedulingService;
     private final ResultService resultService;
+    private final ReportService reportService;
 
     public ApplicationContext(ApplicationConfig config) {
         this.config = Objects.requireNonNull(config);
@@ -86,6 +88,12 @@ public final class ApplicationContext {
                 matchRepository,
                 tournamentRepository,
                 teamRepository
+        );
+        this.reportService = new ReportService(
+                matchRepository,
+                teamRepository,
+                playerRepository,
+                tournamentRepository
         );
     }
 
@@ -155,5 +163,9 @@ public final class ApplicationContext {
 
     public ResultService resultService() {
         return resultService;
+    }
+
+    public ReportService reportService() {
+        return reportService;
     }
 }

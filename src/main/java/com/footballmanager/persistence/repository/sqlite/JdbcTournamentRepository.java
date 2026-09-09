@@ -88,6 +88,21 @@ public final class JdbcTournamentRepository implements TournamentRepository {
     }
 
     @Override
+    public long count() {
+        String sql = "SELECT COUNT(*) FROM tournaments";
+        try (Connection connection = databaseManager.openConnection();
+             PreparedStatement statement = connection.prepareStatement(sql);
+             ResultSet resultSet = statement.executeQuery()) {
+            if (resultSet.next()) {
+                return resultSet.getLong(1);
+            }
+            return 0;
+        } catch (SQLException exception) {
+            throw JdbcRepositorySupport.translate("Counting tournaments", exception);
+        }
+    }
+
+    @Override
     public Tournament update(Tournament tournament) {
         requireStoredTournament(tournament);
         String sql = "UPDATE tournaments SET name = ?, format = ?, status = ?, start_date = ? WHERE id = ?";
