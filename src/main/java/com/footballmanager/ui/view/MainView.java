@@ -22,7 +22,12 @@ public final class MainView extends BorderPane {
     }
 
     private void showScreen(ScreenId screen) {
-        if (screen == ScreenId.TEAMS) {
+        if (screen == ScreenId.DASHBOARD) {
+            setCenter(new DashboardView(new com.footballmanager.ui.viewmodel.DashboardViewModel(
+                    context.tournamentService(),
+                    context.reportService()
+            )));
+        } else if (screen == ScreenId.TEAMS) {
             setCenter(new TeamView(new TeamViewModel(context.teamService())));
         } else if (screen == ScreenId.PLAYERS) {
             setCenter(new PlayerView(new PlayerViewModel(context.playerService(), context.teamService())));
@@ -44,6 +49,11 @@ public final class MainView extends BorderPane {
                     ),
                     context.eventPublisher()
             ));
+        } else if (screen == ScreenId.STANDINGS_REPORTS) {
+            setCenter(new StandingsView(new com.footballmanager.ui.viewmodel.StandingsViewModel(
+                    context.tournamentService(),
+                    context.reportService()
+            )));
         } else {
             setCenter(createEmptyScreen(screen));
         }
