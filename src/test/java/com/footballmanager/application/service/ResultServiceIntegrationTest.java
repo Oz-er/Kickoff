@@ -197,6 +197,31 @@ class ResultServiceIntegrationTest {
     }
 
     @Test
+    void correctionIsRejectedAfterTheNextKnockoutMatchIsCompleted() {
+        long tournamentId = createGeneratedTournament("Protected KO", TournamentFormat.KNOCKOUT, 4);
+        List<Match> tournamentMatches = matches.findByTournamentId(tournamentId);
+        Match firstSemiFinal = tournamentMatches.get(0);
+        Match secondSemiFinal = tournamentMatches.get(1);
+        Match finalMatch = tournamentMatches.get(2);
+
+        resultService.recordResult(firstSemiFinal.id(), 3, 0);
+        resultService.recordResult(secondSemiFinal.id(), 2, 0);
+        resultService.recordResult(finalMatch.id(), 1, 0);
+
+        Match semiFinalBeforeCorrection = matches.findById(firstSemiFinal.id()).orElseThrow();
+        Match finalBeforeCorrection = matches.findById(finalMatch.id()).orElseThrow();
+
+        assertThrows(
+                BusinessRuleException.class,
+                () -> resultService.correctResult(firstSemiFinal.id(), 0, 3)
+        );
+
+        assertEquals(semiFinalBeforeCorrection, matches.findById(firstSemiFinal.id()).orElseThrow());
+        assertEquals(finalBeforeCorrection, matches.findById(finalMatch.id()).orElseThrow());
+        assertEquals(3, resultService.commandHistory().size());
+    }
+
+    @Test
     void undoAfterCorrectionRestoresCorrectedNotOriginal() {
         long tournamentId = createGeneratedTournament("Undo Correct", TournamentFormat.ROUND_ROBIN, 3);
         Match firstMatch = matches.findByTournamentId(tournamentId).getFirst();

@@ -36,5 +36,6 @@ class ApplicationContextTest {
         assertNotNull(context.schedulingService());
         assertNotNull(context.resultService());
         assertNotNull(context.reportService());
+        assertNotNull(context.eventPublisher());
     }
 }

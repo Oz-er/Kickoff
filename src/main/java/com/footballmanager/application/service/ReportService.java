@@ -100,6 +100,15 @@ public final class ReportService {
         );
     }
 
+    public List<MatchDto> getTournamentMatches(long tournamentId) {
+        if (tournamentId <= 0) {
+            throw new ValidationException("Tournament ID must be positive");
+        }
+        return matchRepository.findByTournamentId(tournamentId).stream()
+                .map(this::toMatchDto)
+                .toList();
+    }
+
     private MatchDto toMatchDto(Match match) {
         String homeTeam = match.homeTeamId() != null ? teamRepository.findById(match.homeTeamId()).map(Team::name).orElse("TBD") : "TBD";
         String awayTeam = match.awayTeamId() != null ? teamRepository.findById(match.awayTeamId()).map(Team::name).orElse("TBD") : "TBD";
