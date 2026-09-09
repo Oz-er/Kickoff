@@ -26,6 +26,14 @@ public final class MainView extends BorderPane {
             setCenter(new TeamView(new TeamViewModel(context.teamService())));
         } else if (screen == ScreenId.PLAYERS) {
             setCenter(new PlayerView(new PlayerViewModel(context.playerService(), context.teamService())));
+        } else if (screen == ScreenId.TOURNAMENTS) {
+            setCenter(new com.footballmanager.ui.view.TournamentView(new com.footballmanager.ui.viewmodel.TournamentViewModel(
+                    context.tournamentService(),
+                    context.tournamentRegistrationService(),
+                    context.tournamentLifecycleService(),
+                    context.schedulingService(),
+                    context.teamService()
+            )));
         } else {
             setCenter(createEmptyScreen(screen));
         }
