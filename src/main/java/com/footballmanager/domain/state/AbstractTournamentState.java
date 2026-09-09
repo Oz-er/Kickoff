@@ -31,6 +31,11 @@ abstract class AbstractTournamentState implements TournamentState {
     }
 
     @Override
+    public void ensureCanGenerateFixtures() {
+        reject("generate fixtures");
+    }
+
+    @Override
     public TournamentStatus closeRegistration(TournamentLifecycleContext context) {
         throw invalidTransition("close registration");
     }

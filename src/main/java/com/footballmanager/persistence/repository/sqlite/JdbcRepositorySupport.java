@@ -40,7 +40,7 @@ final class JdbcRepositorySupport {
         return LocalDateTime.parse(resultSet.getString("created_at"), DATABASE_TIME);
     }
 
-    static void rollback(Connection connection, SQLException originalException) {
+    static void rollback(Connection connection, Exception originalException) {
         try {
             connection.rollback();
         } catch (SQLException rollbackException) {

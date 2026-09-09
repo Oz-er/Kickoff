@@ -9,6 +9,10 @@ public final class RegistrationClosedTournamentState extends AbstractTournamentS
     }
 
     @Override
+    public void ensureCanGenerateFixtures() {
+    }
+
+    @Override
     public TournamentStatus markFixturesGenerated(TournamentLifecycleContext context) {
         if (context.totalFixtureCount() == 0) {
             throw new BusinessRuleException("Fixtures must be saved before the tournament can advance");

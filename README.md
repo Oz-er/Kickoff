@@ -52,7 +52,7 @@ Team names and short codes are unique without regard to letter case. Shirt numbe
 
 ## Tournament persistence and registration
 
-Tournament application services support creating, reading, searching, editing, and deleting tournaments. New tournaments start in Draft. Editing, deletion, registration, and unregistration are rejected after Draft until the dedicated lifecycle behavior is introduced.
+Tournament application services support creating, reading, searching, editing, and deleting tournaments. New tournaments start in Draft. The State pattern rejects editing, deletion, registration, and unregistration after Draft.
 
 Teams can be registered in an explicit seed order. A team and seed number can each appear only once per tournament. Multi-team registration uses one database transaction, so a failed row rolls back the entire batch. Deleting a Draft tournament also removes its registrations, while deleting a registered team is restricted to protect relationships.
 
@@ -65,6 +65,8 @@ mvn clean test
 ```
 
 Repository integration tests create isolated temporary databases. Current coverage includes domain input validation, CRUD, case-insensitive search, reconnect persistence, seed repeatability, uniqueness, shirt-number boundaries, foreign keys, ordered registration, relationship protection, safe deletion, transactional rollback, every State's permissions, format-specific team counts, fixture progress, and persisted lifecycle transitions.
+
+Scheduling tests additionally cover odd and even round robins, unique pairings, deterministic seed ordering, four-team and eight-team knockout brackets, pending future rounds, winner-to-slot links, preview safety, duplicate prevention, and rollback when a match or status update fails.
 
 ## Project structure
 
@@ -80,7 +82,7 @@ src/main/java/com/footballmanager
 ## Planned capabilities
 
 - Team, player, and tournament management
-- Round-robin and single-elimination fixture generation
+- Tournament workflow screens for fixture generation
 - Tournament lifecycle validation
 - Match-result recording, correction, and undo
 - League standings, knockout progression, search, and summary reports
@@ -88,10 +90,10 @@ src/main/java/com/footballmanager
 
 ## Design focus
 
-The State pattern now controls tournament lifecycle permissions and transitions through four concrete states. Its [class diagram and design justification](docs/architecture/design-patterns.md) use the implemented class names and explain the alternative considered.
+State controls tournament lifecycle permissions and transitions through four concrete states. Strategy selects between independently tested round-robin and knockout scheduling algorithms. Their [class diagrams and design justifications](docs/architecture/design-patterns.md) use the implemented class names and explain the alternatives considered.
 
-Strategy remains planned for genuinely different fixture-generation algorithms, and Command remains planned for reversible match-result operations. They will be introduced only with the features that require them.
+Command remains planned for reversible match-result operations and will be introduced only with that feature.
 
 ## Current status
 
-The application currently provides its build and navigation foundation plus tested Team, Player, Tournament, and tournament-registration persistence. The State pattern enforces Draft editing and registration, format-specific registration closure, fixture-generation readiness, and completion after all fixtures finish. Registration batches remain transactional. Four demonstration teams and four players are seeded idempotently. Feature screens remain clear empty states until their workflows are implemented.
+The application currently provides its build and navigation foundation plus tested Team, Player, Tournament, registration, and Match persistence. State enforces lifecycle behavior, while Strategy previews and atomically saves round-robin or knockout schedules with explicit progression links. Registration and schedule generation are transactional. Four demonstration teams and four players are seeded idempotently. Feature screens remain clear empty states until their workflows are implemented.

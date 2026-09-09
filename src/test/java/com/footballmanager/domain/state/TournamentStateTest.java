@@ -18,6 +18,7 @@ class TournamentStateTest {
         assertDoesNotThrow(state::ensureCanEdit);
         assertDoesNotThrow(state::ensureCanDelete);
         assertDoesNotThrow(state::ensureCanChangeRegistration);
+        assertThrows(BusinessRuleException.class, state::ensureCanGenerateFixtures);
         assertEquals(TournamentStatus.REGISTRATION_CLOSED, state.closeRegistration(context(TournamentFormat.ROUND_ROBIN, 3, 0, 0)));
         assertEquals(TournamentStatus.REGISTRATION_CLOSED, state.closeRegistration(context(TournamentFormat.KNOCKOUT, 4, 0, 0)));
         assertEquals(TournamentStatus.REGISTRATION_CLOSED, state.closeRegistration(context(TournamentFormat.KNOCKOUT, 8, 0, 0)));
@@ -42,6 +43,7 @@ class TournamentStateTest {
         assertThrows(BusinessRuleException.class, state::ensureCanEdit);
         assertThrows(BusinessRuleException.class, state::ensureCanDelete);
         assertThrows(BusinessRuleException.class, state::ensureCanChangeRegistration);
+        assertDoesNotThrow(state::ensureCanGenerateFixtures);
         assertThrows(BusinessRuleException.class, () -> state.closeRegistration(context(TournamentFormat.ROUND_ROBIN, 3, 0, 0)));
         assertThrows(BusinessRuleException.class, () -> state.markFixturesGenerated(context(TournamentFormat.ROUND_ROBIN, 3, 0, 0)));
         assertThrows(BusinessRuleException.class, () -> state.complete(context(TournamentFormat.ROUND_ROBIN, 3, 3, 0)));
@@ -57,6 +59,7 @@ class TournamentStateTest {
         assertThrows(BusinessRuleException.class, state::ensureCanEdit);
         assertThrows(BusinessRuleException.class, state::ensureCanDelete);
         assertThrows(BusinessRuleException.class, state::ensureCanChangeRegistration);
+        assertThrows(BusinessRuleException.class, state::ensureCanGenerateFixtures);
         assertThrows(BusinessRuleException.class, () -> state.closeRegistration(context(TournamentFormat.ROUND_ROBIN, 3, 3, 0)));
         assertThrows(BusinessRuleException.class, () -> state.markFixturesGenerated(context(TournamentFormat.ROUND_ROBIN, 3, 3, 0)));
     }
@@ -69,6 +72,7 @@ class TournamentStateTest {
         assertThrows(BusinessRuleException.class, state::ensureCanEdit);
         assertThrows(BusinessRuleException.class, state::ensureCanDelete);
         assertThrows(BusinessRuleException.class, state::ensureCanChangeRegistration);
+        assertThrows(BusinessRuleException.class, state::ensureCanGenerateFixtures);
         assertThrows(BusinessRuleException.class, () -> state.closeRegistration(context));
         assertThrows(BusinessRuleException.class, () -> state.markFixturesGenerated(context));
         assertThrows(BusinessRuleException.class, () -> state.complete(context));

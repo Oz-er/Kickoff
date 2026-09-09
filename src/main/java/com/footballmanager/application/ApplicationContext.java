@@ -1,25 +1,31 @@
 package com.footballmanager.application;
 
+import com.footballmanager.application.scheduling.SchedulingService;
 import com.footballmanager.application.service.TournamentLifecycleService;
 import com.footballmanager.application.service.TournamentRegistrationService;
 import com.footballmanager.application.service.TournamentService;
 import com.footballmanager.config.ApplicationConfig;
 import com.footballmanager.config.ApplicationConfigLoader;
 import com.footballmanager.domain.state.TournamentStateResolver;
+import com.footballmanager.domain.scheduling.KnockoutScheduleStrategy;
+import com.footballmanager.domain.scheduling.RoundRobinScheduleStrategy;
 import com.footballmanager.persistence.DatabaseInitializer;
 import com.footballmanager.persistence.DatabaseManager;
 import com.footballmanager.persistence.repository.PlayerRepository;
 import com.footballmanager.persistence.repository.MatchProgressRepository;
+import com.footballmanager.persistence.repository.MatchRepository;
 import com.footballmanager.persistence.repository.TeamRepository;
 import com.footballmanager.persistence.repository.TournamentRegistrationRepository;
 import com.footballmanager.persistence.repository.TournamentRepository;
 import com.footballmanager.persistence.repository.sqlite.JdbcPlayerRepository;
 import com.footballmanager.persistence.repository.sqlite.JdbcMatchProgressRepository;
+import com.footballmanager.persistence.repository.sqlite.JdbcMatchRepository;
 import com.footballmanager.persistence.repository.sqlite.JdbcTeamRepository;
 import com.footballmanager.persistence.repository.sqlite.JdbcTournamentRegistrationRepository;
 import com.footballmanager.persistence.repository.sqlite.JdbcTournamentRepository;
 
 import java.util.Objects;
+import java.util.List;
 
 public final class ApplicationContext {
     private final ApplicationConfig config;
@@ -30,9 +36,11 @@ public final class ApplicationContext {
     private final TournamentRepository tournamentRepository;
     private final TournamentRegistrationRepository tournamentRegistrationRepository;
     private final MatchProgressRepository matchProgressRepository;
+    private final MatchRepository matchRepository;
     private final TournamentService tournamentService;
     private final TournamentRegistrationService tournamentRegistrationService;
     private final TournamentLifecycleService tournamentLifecycleService;
+    private final SchedulingService schedulingService;
 
     public ApplicationContext(ApplicationConfig config) {
         this.config = Objects.requireNonNull(config);
@@ -43,6 +51,7 @@ public final class ApplicationContext {
         this.tournamentRepository = new JdbcTournamentRepository(databaseManager);
         this.tournamentRegistrationRepository = new JdbcTournamentRegistrationRepository(databaseManager);
         this.matchProgressRepository = new JdbcMatchProgressRepository(databaseManager);
+        this.matchRepository = new JdbcMatchRepository(databaseManager);
         TournamentStateResolver stateResolver = new TournamentStateResolver();
         this.tournamentService = new TournamentService(tournamentRepository, stateResolver);
         this.tournamentRegistrationService = new TournamentRegistrationService(
@@ -56,6 +65,14 @@ public final class ApplicationContext {
                 tournamentRegistrationRepository,
                 matchProgressRepository,
                 stateResolver
+        );
+        this.schedulingService = new SchedulingService(
+                tournamentRepository,
+                tournamentRegistrationRepository,
+                teamRepository,
+                matchRepository,
+                stateResolver,
+                List.of(new RoundRobinScheduleStrategy(), new KnockoutScheduleStrategy())
         );
     }
 
@@ -95,6 +112,10 @@ public final class ApplicationContext {
         return matchProgressRepository;
     }
 
+    public MatchRepository matchRepository() {
+        return matchRepository;
+    }
+
     public TournamentService tournamentService() {
         return tournamentService;
     }
@@ -105,5 +126,9 @@ public final class ApplicationContext {
 
     public TournamentLifecycleService tournamentLifecycleService() {
         return tournamentLifecycleService;
+    }
+
+    public SchedulingService schedulingService() {
+        return schedulingService;
     }
 }

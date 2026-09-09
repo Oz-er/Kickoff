@@ -11,6 +11,8 @@ public interface TournamentState {
 
     void ensureCanChangeRegistration();
 
+    void ensureCanGenerateFixtures();
+
     TournamentStatus closeRegistration(TournamentLifecycleContext context);
 
     TournamentStatus markFixturesGenerated(TournamentLifecycleContext context);
