@@ -34,5 +34,6 @@ class ApplicationContextTest {
         assertNotNull(context.tournamentRegistrationService());
         assertNotNull(context.tournamentLifecycleService());
         assertNotNull(context.schedulingService());
+        assertNotNull(context.resultService());
     }
 }

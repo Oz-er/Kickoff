@@ -6,6 +6,7 @@ import com.footballmanager.application.service.TournamentRegistrationService;
 import com.footballmanager.application.service.TournamentService;
 import com.footballmanager.application.service.TeamService;
 import com.footballmanager.application.service.PlayerService;
+import com.footballmanager.application.service.ResultService;
 import com.footballmanager.config.ApplicationConfig;
 import com.footballmanager.config.ApplicationConfigLoader;
 import com.footballmanager.domain.state.TournamentStateResolver;
@@ -45,6 +46,7 @@ public final class ApplicationContext {
     private final TournamentRegistrationService tournamentRegistrationService;
     private final TournamentLifecycleService tournamentLifecycleService;
     private final SchedulingService schedulingService;
+    private final ResultService resultService;
 
     public ApplicationContext(ApplicationConfig config) {
         this.config = Objects.requireNonNull(config);
@@ -79,6 +81,11 @@ public final class ApplicationContext {
                 matchRepository,
                 stateResolver,
                 List.of(new RoundRobinScheduleStrategy(), new KnockoutScheduleStrategy())
+        );
+        this.resultService = new ResultService(
+                matchRepository,
+                tournamentRepository,
+                teamRepository
         );
     }
 
@@ -144,5 +151,9 @@ public final class ApplicationContext {
 
     public SchedulingService schedulingService() {
         return schedulingService;
+    }
+
+    public ResultService resultService() {
+        return resultService;
     }
 }
