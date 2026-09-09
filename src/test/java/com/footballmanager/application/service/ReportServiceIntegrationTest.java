@@ -135,7 +135,9 @@ class ReportServiceIntegrationTest {
     @Test
     void missingTournamentThrowsEntityNotFoundException() {
         assertThrows(EntityNotFoundException.class, () -> reportService.generateStandings(999L));
+        assertThrows(EntityNotFoundException.class, () -> reportService.getDashboardSummary(999L, 5));
         assertThrows(EntityNotFoundException.class, () -> reportService.generateTournamentSummary(999L));
+        assertThrows(EntityNotFoundException.class, () -> reportService.getTournamentMatches(999L));
     }
 
     @Test

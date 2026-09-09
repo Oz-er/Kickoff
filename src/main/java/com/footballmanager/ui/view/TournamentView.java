@@ -6,7 +6,6 @@ import com.footballmanager.application.dto.SchedulePreviewDto;
 import com.footballmanager.application.dto.TeamDto;
 import com.footballmanager.application.dto.TournamentDto;
 import com.footballmanager.application.dto.TournamentRegistrationRequest;
-import com.footballmanager.application.exception.BusinessRuleException;
 import com.footballmanager.domain.model.TournamentFormat;
 import com.footballmanager.domain.model.TournamentStatus;
 import com.footballmanager.ui.dialog.UiDialogs;
@@ -22,7 +21,6 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
-import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextInputDialog;
@@ -32,7 +30,6 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 
@@ -47,21 +44,21 @@ public final class TournamentView extends VBox {
     
     private final VBox workflowContainer = new VBox(20);
     
-    // Workflow sections
     private final VBox draftSection = new VBox(10);
     private final VBox schedulingSection = new VBox(10);
     private final VBox activeSection = new VBox(10);
-    
-    // Draft components
+
     private final ObservableList<TeamDto> availableTeams = FXCollections.observableArrayList();
     private final ObservableList<RegisteredTeamDto> registeredTeams = FXCollections.observableArrayList();
     private final ListView<TeamDto> availableList = new ListView<>(availableTeams);
     private final ListView<RegisteredTeamDto> registeredList = new ListView<>(registeredTeams);
     private final Label teamCountGuidance = new Label();
     
-    // Scheduling components
     private final ObservableList<com.footballmanager.application.dto.FixturePreviewDto> previewMatches = FXCollections.observableArrayList();
     private final TableView<com.footballmanager.application.dto.FixturePreviewDto> previewTable = new TableView<>(previewMatches);
+    private final Label activeTitle = new Label();
+    private final Label activeInfo = new Label();
+    private final Button completeButton = new Button("Complete Tournament");
     private SchedulePreviewDto currentPreview = null;
 
     public TournamentView(TournamentViewModel viewModel) {
@@ -120,8 +117,20 @@ public final class TournamentView extends VBox {
                 )
             )
         );
-        
-        HBox bar = new HBox(16, new Label("Active Tournament:"), tournamentSelector, createBtn, editBtn);
+
+        Button deleteBtn = new Button("Delete Draft");
+        deleteBtn.getStyleClass().add("danger-button");
+        deleteBtn.setOnAction(e -> deleteTournament());
+        deleteBtn.disableProperty().bind(
+            currentTournament.isNull().or(
+                javafx.beans.binding.Bindings.createBooleanBinding(
+                    () -> currentTournament.get() != null && currentTournament.get().status() != TournamentStatus.DRAFT,
+                    currentTournament
+                )
+            )
+        );
+
+        HBox bar = new HBox(16, new Label("Tournament:"), tournamentSelector, createBtn, editBtn, deleteBtn);
         bar.setAlignment(Pos.CENTER_LEFT);
         return bar;
     }
@@ -190,7 +199,7 @@ public final class TournamentView extends VBox {
         TableColumn<com.footballmanager.application.dto.FixturePreviewDto, String> matchCol = new TableColumn<>("Match");
         matchCol.setCellValueFactory(data -> new javafx.beans.property.SimpleStringProperty(data.getValue().homeTeamName() + " vs " + data.getValue().awayTeamName()));
         
-        previewTable.getColumns().addAll(roundCol, matchCol);
+        previewTable.getColumns().setAll(List.of(roundCol, matchCol));
         previewTable.setPrefHeight(200);
         previewTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
         
@@ -210,12 +219,11 @@ public final class TournamentView extends VBox {
         activeSection.getStyleClass().add("card");
         activeSection.setPadding(new Insets(16));
         
-        Label title = new Label("Tournament is Active");
-        title.getStyleClass().add("section-title");
-        
-        Label info = new Label("Fixtures have been generated. Head over to Fixtures & Results to record matches.");
-        
-        activeSection.getChildren().addAll(title, info);
+        activeTitle.getStyleClass().add("section-title");
+        completeButton.getStyleClass().add("primary-button");
+        completeButton.setOnAction(e -> completeTournament());
+
+        activeSection.getChildren().addAll(activeTitle, activeInfo, completeButton);
     }
 
     private void updateWorkflow(TournamentDto t) {
@@ -233,9 +241,9 @@ public final class TournamentView extends VBox {
             draftSection.setManaged(true);
             
             if (t.format() == TournamentFormat.KNOCKOUT) {
-                teamCountGuidance.setText("Knockout format requires exactly a power of 2 teams (e.g. 2, 4, 8, 16) to close registration.");
+                teamCountGuidance.setText("Knockout format requires exactly 4 or 8 teams to close registration.");
             } else {
-                teamCountGuidance.setText("Round Robin format requires at least 2 teams.");
+                teamCountGuidance.setText("Round Robin format requires at least 3 teams.");
             }
             
             reloadTeams(t.id());
@@ -247,6 +255,13 @@ public final class TournamentView extends VBox {
         } else {
             activeSection.setVisible(true);
             activeSection.setManaged(true);
+            boolean completed = t.status() == TournamentStatus.COMPLETED;
+            activeTitle.setText(completed ? "Tournament Completed" : "Tournament is Active");
+            activeInfo.setText(completed
+                    ? "Every fixture is complete and the tournament lifecycle is finished."
+                    : "Record every result, then return here to complete the tournament.");
+            completeButton.setVisible(!completed);
+            completeButton.setManaged(!completed);
         }
     }
 
@@ -260,6 +275,20 @@ public final class TournamentView extends VBox {
     private void reloadTeams(long tournamentId) {
         availableTeams.setAll(viewModel.loadAvailableTeams(tournamentId));
         registeredTeams.setAll(viewModel.loadRegisteredTeams(tournamentId));
+    }
+
+    private void deleteTournament() {
+        TournamentDto tournament = currentTournament.get();
+        if (tournament == null || !dialogs.confirmDelete(window(), tournament.name(), "tournament")) {
+            return;
+        }
+        try {
+            viewModel.delete(tournament.id());
+            currentTournament.set(null);
+            reloadTournaments(null);
+        } catch (RuntimeException exception) {
+            dialogs.showError(window(), "Could not delete tournament", exception);
+        }
     }
 
     private void showEditor(TournamentDto existing) {
@@ -311,7 +340,6 @@ public final class TournamentView extends VBox {
         grid.add(startDatePicker, 1, 2);
         dialog.getDialogPane().setContent(grid);
 
-        // Optional: Ensure cancellation makes no changes by tying button to result converter
         dialog.setResultConverter(b -> {
             if (b == saveButton) {
                 return new TournamentForm(name.getText(), formatCombo.getValue(), startDatePicker.getValue());
@@ -387,11 +415,22 @@ public final class TournamentView extends VBox {
         if (currentPreview != null) {
             try {
                 viewModel.generateSchedule(currentPreview);
-                // Status changed to FIXTURES_GENERATED, reload tournament
                 TournamentDto t = currentTournament.get();
                 reloadTournaments(t.id());
             } catch (Exception ex) {
                 dialogs.showError(window(), "Generation failed", ex);
+            }
+        }
+    }
+
+    private void completeTournament() {
+        TournamentDto tournament = currentTournament.get();
+        if (tournament != null && tournament.status() == TournamentStatus.FIXTURES_GENERATED) {
+            try {
+                TournamentDto completed = viewModel.completeTournament(tournament.id());
+                reloadTournaments(completed.id());
+            } catch (RuntimeException exception) {
+                dialogs.showError(window(), "Cannot complete tournament", exception);
             }
         }
     }

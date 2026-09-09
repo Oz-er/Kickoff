@@ -27,6 +27,7 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.stage.Window;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 
@@ -70,7 +71,6 @@ public final class FixturesView extends VBox {
         
         eventPublisher.subscribe(eventListener);
         
-        // Ensure listener is removed when view is detached to prevent leaks
         sceneProperty().addListener((obs, oldScene, newScene) -> {
             if (newScene == null) {
                 eventPublisher.unsubscribe(eventListener);
@@ -166,7 +166,7 @@ public final class FixturesView extends VBox {
         });
         progCol.setPrefWidth(250);
         
-        table.getColumns().setAll(roundCol, matchCol, statusCol, scoreCol, progCol);
+        table.getColumns().setAll(List.of(roundCol, matchCol, statusCol, scoreCol, progCol));
         table.setPlaceholder(new Label("Select a tournament to view fixtures"));
         
         table.setOnMouseClicked(event -> {

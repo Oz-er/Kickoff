@@ -76,4 +76,17 @@ class TournamentViewModelTest {
         assertEquals(1, tournaments.size());
         assertEquals("My Tournament", tournaments.get(0).name());
     }
+
+    @Test
+    void deleteRemovesDraftTournament() {
+        TournamentDto tournament = viewModel.create(new CreateTournamentRequest(
+                "Temporary Tournament",
+                TournamentFormat.KNOCKOUT,
+                LocalDate.now()
+        ));
+
+        viewModel.delete(tournament.id());
+
+        assertEquals(0, viewModel.loadTournaments().size());
+    }
 }
