@@ -61,6 +61,9 @@ public final class RecordMatchResultCommand {
         if (match.nextMatchId() != null) {
             Match nextMatch = matchRepository.findById(match.nextMatchId())
                     .orElseThrow(() -> new EntityNotFoundException("Next match " + match.nextMatchId() + " was not found"));
+            if (nextMatch.status() == MatchStatus.COMPLETED) {
+                throw new BusinessRuleException("This result cannot be changed because the next knockout match is already completed");
+            }
             nextMatchPreviousStatus = nextMatch.status();
             nextMatchPreviousHomeTeamId = nextMatch.homeTeamId();
             nextMatchPreviousAwayTeamId = nextMatch.awayTeamId();
