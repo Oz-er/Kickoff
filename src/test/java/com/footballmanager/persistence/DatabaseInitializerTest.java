@@ -23,9 +23,13 @@ class DatabaseInitializerTest {
         initializer.initialize();
 
         try (Connection connection = manager.openConnection();
-             Statement statement = connection.createStatement();
-             ResultSet result = statement.executeQuery("SELECT COUNT(*) FROM teams")) {
-            assertEquals(4, result.getInt(1));
+             Statement statement = connection.createStatement()) {
+            try (ResultSet teams = statement.executeQuery("SELECT COUNT(*) FROM teams")) {
+                assertEquals(4, teams.getInt(1));
+            }
+            try (ResultSet players = statement.executeQuery("SELECT COUNT(*) FROM players")) {
+                assertEquals(4, players.getInt(1));
+            }
         }
     }
 }
