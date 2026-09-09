@@ -16,7 +16,7 @@
 - [ ] Click "Close Registration" and verify it is rejected with a business rule exception (not a power of 2).
 - [ ] Register 1 more team (total 4 teams) with a unique seed.
 - [ ] Click "Close Registration". Tournament state should update to REGISTRATION_CLOSED.
-- [ ] Click "Preview Schedule". Ensure exactly 2 fixtures (Round 1) appear in the preview table.
+- [ ] Click "Preview Schedule". Ensure two scheduled semifinals and one pending final appear.
 - [ ] Click "Confirm & Generate Fixtures".
 - [ ] Verify the Active Tournament panel appears indicating fixtures are generated.
 

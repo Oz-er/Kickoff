@@ -7,6 +7,7 @@ import com.footballmanager.domain.model.Match;
 import com.footballmanager.domain.model.MatchStatus;
 import com.footballmanager.domain.model.Team;
 import com.footballmanager.domain.model.Tournament;
+import com.footballmanager.domain.model.TournamentFormat;
 import com.footballmanager.application.exception.BusinessRuleException;
 import com.footballmanager.application.exception.EntityNotFoundException;
 import com.footballmanager.application.exception.ValidationException;
@@ -39,13 +40,9 @@ public final class ReportService {
     }
 
     public List<StandingsRowDto> generateStandings(long tournamentId) {
-        if (tournamentId <= 0) {
-            throw new ValidationException("Tournament ID must be positive");
-        }
-        Tournament tournament = tournamentRepository.findById(tournamentId)
-                .orElseThrow(() -> new EntityNotFoundException("Tournament not found"));
+        Tournament tournament = requireTournament(tournamentId);
                 
-        if (tournament.format() == com.footballmanager.domain.model.TournamentFormat.KNOCKOUT) {
+        if (tournament.format() == TournamentFormat.KNOCKOUT) {
             throw new BusinessRuleException("Standings are not available for knockout tournaments");
         }
         
@@ -71,6 +68,9 @@ public final class ReportService {
         if (upcomingLimit <= 0) {
             throw new ValidationException("Limit must be positive");
         }
+        if (tournamentId != null) {
+            requireTournament(tournamentId);
+        }
         long totalTeams = teamRepository.count();
         long totalPlayers = playerRepository.count();
         long totalTournaments = tournamentRepository.count();
@@ -83,11 +83,7 @@ public final class ReportService {
     }
 
     public String generateTournamentSummary(long tournamentId) {
-        if (tournamentId <= 0) {
-            throw new ValidationException("Tournament ID must be positive");
-        }
-        Tournament tournament = tournamentRepository.findById(tournamentId)
-                .orElseThrow(() -> new EntityNotFoundException("Tournament not found"));
+        Tournament tournament = requireTournament(tournamentId);
         long matchCount = matchRepository.findByTournamentId(tournamentId).size();
         
         return String.format(
@@ -101,9 +97,7 @@ public final class ReportService {
     }
 
     public List<MatchDto> getTournamentMatches(long tournamentId) {
-        if (tournamentId <= 0) {
-            throw new ValidationException("Tournament ID must be positive");
-        }
+        requireTournament(tournamentId);
         return matchRepository.findByTournamentId(tournamentId).stream()
                 .map(this::toMatchDto)
                 .toList();
@@ -116,5 +110,13 @@ public final class ReportService {
                 match.homeTeamId(), homeTeam, match.awayTeamId(), awayTeam,
                 match.homeScore(), match.awayScore(), match.status(), match.scheduledAt(),
                 match.nextMatchId(), match.nextMatchSlot());
+    }
+
+    private Tournament requireTournament(long tournamentId) {
+        if (tournamentId <= 0) {
+            throw new ValidationException("Tournament ID must be positive");
+        }
+        return tournamentRepository.findById(tournamentId)
+                .orElseThrow(() -> new EntityNotFoundException("Tournament " + tournamentId + " was not found"));
     }
 }

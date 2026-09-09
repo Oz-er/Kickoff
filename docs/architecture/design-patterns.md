@@ -1,5 +1,84 @@
 # Design Patterns
 
+Only State, Strategy, and Command are claimed as Gang of Four patterns. This audit follows the actual production classes and automated tests. `ApplicationEventPublisher` is only a small UI refresh utility and is not presented as another pattern.
+
+| Pattern | Production evidence | Test evidence |
+|---|---|---|
+| State | `TournamentState`, four concrete states, `TournamentStateResolver`, lifecycle-aware services | `TournamentStateTest`, `TournamentLifecycleServiceIntegrationTest` |
+| Strategy | `ScheduleStrategy`, two scheduling implementations, `SchedulingService` | Both strategy unit tests and `SchedulingServiceIntegrationTest` |
+| Command | `RecordMatchResultCommand`, `MatchSnapshot`, `CommandHistory`, `ResultService` | Command unit tests and `ResultServiceIntegrationTest` |
+
+## Combined pattern class diagram
+
+```mermaid
+classDiagram
+    direction TB
+
+    class TournamentState {
+        <<interface>>
+        +status() TournamentStatus
+        +ensureCanEdit() void
+        +ensureCanDelete() void
+        +ensureCanChangeRegistration() void
+        +ensureCanGenerateFixtures() void
+        +closeRegistration(context) TournamentStatus
+        +markFixturesGenerated(context) TournamentStatus
+        +complete(context) TournamentStatus
+    }
+    class AbstractTournamentState
+    class DraftTournamentState
+    class RegistrationClosedTournamentState
+    class FixturesGeneratedTournamentState
+    class CompletedTournamentState
+    class TournamentStateResolver
+    class TournamentLifecycleService
+
+    TournamentState <|.. AbstractTournamentState
+    AbstractTournamentState <|-- DraftTournamentState
+    AbstractTournamentState <|-- RegistrationClosedTournamentState
+    AbstractTournamentState <|-- FixturesGeneratedTournamentState
+    AbstractTournamentState <|-- CompletedTournamentState
+    TournamentStateResolver --> TournamentState
+    TournamentLifecycleService --> TournamentStateResolver
+
+    class ScheduleStrategy {
+        <<interface>>
+        +format() TournamentFormat
+        +generate(tournamentId, registrations) List~FixtureDraft~
+    }
+    class RoundRobinScheduleStrategy
+    class KnockoutScheduleStrategy
+    class SchedulingService
+    class MatchRepository {
+        <<interface>>
+        +saveScheduleAndTransition(...) void
+        +recordResult(...) void
+        +undoResult(snapshot) void
+    }
+
+    ScheduleStrategy <|.. RoundRobinScheduleStrategy
+    ScheduleStrategy <|.. KnockoutScheduleStrategy
+    SchedulingService --> ScheduleStrategy
+    SchedulingService --> TournamentStateResolver
+    SchedulingService --> MatchRepository
+
+    class RecordMatchResultCommand {
+        +execute() void
+        +undo() void
+    }
+    class MatchSnapshot
+    class CommandHistory
+    class ResultService
+
+    ResultService --> RecordMatchResultCommand
+    ResultService --> CommandHistory
+    CommandHistory --> RecordMatchResultCommand
+    RecordMatchResultCommand --> MatchSnapshot
+    RecordMatchResultCommand --> MatchRepository
+```
+
+The three sections below provide the design reason, rejected alternative, consequence, future benefit, and a focused view of each part of this combined diagram.
+
 ## State: tournament lifecycle
 
 ### Problem
@@ -141,7 +220,7 @@ Recording a match result can require multiple database changes: updating the mat
 
 ### Decision
 
-`RecordMatchResultCommand` encapsulates a single result-recording action. Before executing, it captures a `MatchSnapshot` of the current match state and, for knockout matches, the state of the next match. The `execute` method validates scores, rejects knockout draws, and delegates the transactional execution to `MatchRepository`. The `undo` method delegates the restoration of the match and any progressed next match from the snapshot back to `MatchRepository`. A command that fails validation or execution does not store a snapshot and is never added to history.
+`RecordMatchResultCommand` encapsulates a single result-recording action. Before executing, it captures a `MatchSnapshot` of the current match state and, for knockout matches, the state of the next match. Construction validates identifiers and non-negative scores; execution rejects knockout draws, pending matches, and changes that would invalidate an already completed downstream match. It then delegates the transactional execution to `MatchRepository`. The `undo` method delegates restoration of the match and any progressed next match from the snapshot back to `MatchRepository`. A command that fails validation or execution does not enter history.
 
 `CommandHistory` stores only successfully executed commands in a last-in-first-out stack. `ResultService` creates each command, calls `execute`, and pushes it to the history only after success. Undo peeks the most recent command, calls its `undo` method, and pops it only after a successful rollback.
 

@@ -51,6 +51,10 @@ public final class TournamentViewModel {
         return tournamentService.update(id, request);
     }
 
+    public void delete(long id) {
+        tournamentService.delete(id);
+    }
+
     public List<RegisteredTeamDto> loadRegisteredTeams(long tournamentId) {
         return registrationService.findRegisteredTeams(tournamentId);
     }
@@ -84,5 +88,9 @@ public final class TournamentViewModel {
 
     public void generateSchedule(SchedulePreviewDto preview) {
         schedulingService.generateSchedule(preview);
+    }
+
+    public TournamentDto completeTournament(long tournamentId) {
+        return lifecycleService.complete(tournamentId);
     }
 }

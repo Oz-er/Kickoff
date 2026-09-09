@@ -16,6 +16,7 @@
 ## Correction and Undo
 - [ ] Double-click a COMPLETED match. Correct the score by entering new values. Save.
 - [ ] Verify the table reflects the corrected score.
+- [ ] Complete a downstream knockout match, then attempt to change its feeder result. Verify the correction is rejected and both matches remain unchanged.
 - [ ] Click the "Undo Last Result" button.
 - [ ] Verify the most recent result modification is reverted to its previous state (or back to SCHEDULED).
 - [ ] Verify the "Undo Last Result" button is only enabled when there is command history available.

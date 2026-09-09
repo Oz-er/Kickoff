@@ -1,4 +1,6 @@
-# Omer to Rubaiyat Handoff
+# Prompt 6 Historical Handoff
+
+This document records the project state at the Omer-to-Rubaiyat handoff after Prompt 6. For the completed system, use `README.md` and `docs/handoff/final-release.md`.
 
 ## Completed behavior
 
@@ -18,7 +20,7 @@ The Team and Player screens are functional. Dashboard, Tournaments, Fixtures, an
 - `TeamService`, `PlayerService`, `TeamViewModel`, and `PlayerViewModel` support the two implemented management screens.
 - `TeamView` and `PlayerView` own JavaFX interaction without SQL or tournament business rules.
 - `JdbcTeamRepository`, `JdbcPlayerRepository`, `JdbcTournamentRepository`, `JdbcTournamentRegistrationRepository`, and `JdbcMatchRepository` contain SQLite access.
-- `TournamentState`, `DraftState`, `RegistrationClosedState`, `FixturesGeneratedState`, and `CompletedState` enforce lifecycle permissions.
+- `TournamentState`, `DraftTournamentState`, `RegistrationClosedTournamentState`, `FixturesGeneratedTournamentState`, and `CompletedTournamentState` enforce lifecycle permissions.
 - `ScheduleStrategy`, `RoundRobinScheduleStrategy`, `KnockoutScheduleStrategy`, and `SchedulingService` generate and persist fixtures.
 - `UserMessageMapper` prevents unexpected technical details from reaching UI error dialogs.
 
@@ -38,7 +40,7 @@ Run `mvn clean test` for the automated suite. It covers configuration, initializ
 
 Complete the [manual UI checklist](../testing/manual-ui-checklist.md) before the final demonstration.
 
-## Known limitations
+## Limitations at the time of this handoff
 
 - Tournament and fixture workflows do not yet have JavaFX forms.
 - Match result entry, knockout winner advancement, undo, standings, and reports are not implemented.

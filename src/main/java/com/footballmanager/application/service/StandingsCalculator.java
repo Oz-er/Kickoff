@@ -32,7 +32,7 @@ public final class StandingsCalculator {
                 .sorted(Comparator.comparing(StandingsRowDto::points).reversed()
                         .thenComparing(Comparator.comparing(StandingsRowDto::goalDifference).reversed())
                         .thenComparing(Comparator.comparing(StandingsRowDto::goalsFor).reversed())
-                        .thenComparing(dto -> dto.teamName().toLowerCase()))
+                        .thenComparing(StandingsRowDto::teamName, String.CASE_INSENSITIVE_ORDER))
                 .toList();
     }
 
