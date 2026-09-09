@@ -34,6 +34,16 @@ public final class MainView extends BorderPane {
                     context.schedulingService(),
                     context.teamService()
             )));
+        } else if (screen == ScreenId.FIXTURES_RESULTS) {
+            setCenter(new com.footballmanager.ui.view.FixturesView(
+                    new com.footballmanager.ui.viewmodel.FixturesViewModel(
+                            context.tournamentService(),
+                            context.reportService(),
+                            context.resultService(),
+                            context.eventPublisher()
+                    ),
+                    context.eventPublisher()
+            ));
         } else {
             setCenter(createEmptyScreen(screen));
         }

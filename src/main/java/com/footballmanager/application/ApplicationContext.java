@@ -49,9 +49,11 @@ public final class ApplicationContext {
     private final SchedulingService schedulingService;
     private final ResultService resultService;
     private final ReportService reportService;
+    private final com.footballmanager.application.event.ApplicationEventPublisher eventPublisher;
 
     public ApplicationContext(ApplicationConfig config) {
         this.config = Objects.requireNonNull(config);
+        this.eventPublisher = new com.footballmanager.application.event.ApplicationEventPublisher();
         this.databaseManager = new DatabaseManager(config.databasePath());
         this.databaseInitializer = new DatabaseInitializer(databaseManager);
         this.teamRepository = new JdbcTeamRepository(databaseManager);
@@ -167,5 +169,9 @@ public final class ApplicationContext {
 
     public ReportService reportService() {
         return reportService;
+    }
+
+    public com.footballmanager.application.event.ApplicationEventPublisher eventPublisher() {
+        return eventPublisher;
     }
 }
