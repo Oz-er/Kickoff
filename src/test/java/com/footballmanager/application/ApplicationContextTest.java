@@ -24,5 +24,9 @@ class ApplicationContextTest {
         assertTrue(Files.exists(databasePath));
         assertNotNull(context.teamRepository());
         assertNotNull(context.playerRepository());
+        assertNotNull(context.tournamentRepository());
+        assertNotNull(context.tournamentRegistrationRepository());
+        assertNotNull(context.tournamentService());
+        assertNotNull(context.tournamentRegistrationService());
     }
 }

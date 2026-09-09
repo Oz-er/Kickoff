@@ -5,6 +5,7 @@ import com.footballmanager.application.exception.DatabaseException;
 import com.footballmanager.application.exception.ValidationException;
 
 import java.sql.ResultSet;
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -37,5 +38,13 @@ final class JdbcRepositorySupport {
 
     static LocalDateTime readCreatedAt(ResultSet resultSet) throws SQLException {
         return LocalDateTime.parse(resultSet.getString("created_at"), DATABASE_TIME);
+    }
+
+    static void rollback(Connection connection, SQLException originalException) {
+        try {
+            connection.rollback();
+        } catch (SQLException rollbackException) {
+            originalException.addSuppressed(rollbackException);
+        }
     }
 }
