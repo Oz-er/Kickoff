@@ -12,7 +12,7 @@ import com.footballmanager.persistence.repository.TournamentRepository;
 
 import java.util.Objects;
 
-public final class RecordMatchResultCommand {
+public final class RecordMatchResultCommand implements UndoableCommand {
     private final long matchId;
     private final int homeScore;
     private final int awayScore;
@@ -41,6 +41,7 @@ public final class RecordMatchResultCommand {
         this.tournamentRepository = Objects.requireNonNull(tournamentRepository);
     }
 
+    @Override
     public void execute() {
         Match match = matchRepository.findById(matchId)
                 .orElseThrow(() -> new EntityNotFoundException("Match " + matchId + " was not found"));
@@ -94,6 +95,7 @@ public final class RecordMatchResultCommand {
         }
     }
 
+    @Override
     public void undo() {
         if (!executed || snapshot == null) {
             throw new BusinessRuleException("There is no executed result to undo");
@@ -114,6 +116,7 @@ public final class RecordMatchResultCommand {
         return awayScore;
     }
 
+    @Override
     public boolean isExecuted() {
         return executed;
     }

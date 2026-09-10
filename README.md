@@ -133,7 +133,7 @@ Only three Gang of Four patterns are claimed:
 |---|---|---|
 | State | Tournament permissions and transitions depend on lifecycle status | `TournamentState`, four concrete state classes, `TournamentStateResolver`, `TournamentLifecycleService` |
 | Strategy | Round-robin and knockout schedules use different algorithms | `ScheduleStrategy`, `RoundRobinScheduleStrategy`, `KnockoutScheduleStrategy`, `SchedulingService` |
-| Command | A result and its knockout progression must be executable and reversible as one action | `RecordMatchResultCommand`, `MatchSnapshot`, `CommandHistory`, `ResultService` |
+| Command | A result and its knockout progression must be executable and reversible as one action | `UndoableCommand`, `RecordMatchResultCommand`, `MatchSnapshot`, `CommandHistory`, `ResultService` |
 
 `ApplicationEventPublisher` is a small UI refresh mechanism and is not claimed as a fourth design pattern.
 
@@ -165,7 +165,7 @@ Run all automated tests:
 mvn clean test
 ```
 
-The final suite contains 118 tests. It covers domain validation, repository CRUD and search, foreign keys, uniqueness, database restart persistence, State permissions, Strategy algorithms, Command execution and undo, transaction rollback, standings, reports, view models, and complete round-robin and knockout workflows.
+The final suite contains 119 tests. It covers domain validation, repository CRUD and search, foreign keys, uniqueness, database restart persistence, State permissions, Strategy algorithms, Command execution and undo, transaction rollback, standings, reports, view models, and complete round-robin and knockout workflows.
 
 Useful focused commands:
 

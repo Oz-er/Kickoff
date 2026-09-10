@@ -6,7 +6,7 @@ Only State, Strategy, and Command are claimed as Gang of Four patterns. This aud
 |---|---|---|
 | State | `TournamentState`, four concrete states, `TournamentStateResolver`, lifecycle-aware services | `TournamentStateTest`, `TournamentLifecycleServiceIntegrationTest` |
 | Strategy | `ScheduleStrategy`, two scheduling implementations, `SchedulingService` | Both strategy unit tests and `SchedulingServiceIntegrationTest` |
-| Command | `RecordMatchResultCommand`, `MatchSnapshot`, `CommandHistory`, `ResultService` | Command unit tests and `ResultServiceIntegrationTest` |
+| Command | `UndoableCommand`, `RecordMatchResultCommand`, `MatchSnapshot`, `CommandHistory`, `ResultService` | Command unit tests and `ResultServiceIntegrationTest` |
 
 ## Combined pattern class diagram
 
@@ -62,6 +62,12 @@ classDiagram
     SchedulingService --> TournamentStateResolver
     SchedulingService --> MatchRepository
 
+    class UndoableCommand {
+        <<interface>>
+        +execute() void
+        +undo() void
+        +isExecuted() boolean
+    }
     class RecordMatchResultCommand {
         +execute() void
         +undo() void
@@ -70,9 +76,10 @@ classDiagram
     class CommandHistory
     class ResultService
 
+    UndoableCommand <|.. RecordMatchResultCommand
     ResultService --> RecordMatchResultCommand
     ResultService --> CommandHistory
-    CommandHistory --> RecordMatchResultCommand
+    CommandHistory --> UndoableCommand
     RecordMatchResultCommand --> MatchSnapshot
     RecordMatchResultCommand --> MatchRepository
 ```
@@ -220,14 +227,20 @@ Recording a match result can require multiple database changes: updating the mat
 
 ### Decision
 
-`RecordMatchResultCommand` encapsulates a single result-recording action. Before executing, it captures a `MatchSnapshot` of the current match state and, for knockout matches, the state of the next match. Construction validates identifiers and non-negative scores; execution rejects knockout draws, pending matches, and changes that would invalidate an already completed downstream match. It then delegates the transactional execution to `MatchRepository`. The `undo` method delegates restoration of the match and any progressed next match from the snapshot back to `MatchRepository`. A command that fails validation or execution does not enter history.
+`UndoableCommand` defines the common `execute`, `undo`, and execution-state contract. `RecordMatchResultCommand` implements that contract and encapsulates a single result-recording action. Before executing, it captures a `MatchSnapshot` of the current match state and, for knockout matches, the state of the next match. Construction validates identifiers and non-negative scores; execution rejects knockout draws, pending matches, and changes that would invalidate an already completed downstream match. It then delegates the transactional execution to `MatchRepository`. The `undo` method delegates restoration of the match and any progressed next match from the snapshot back to `MatchRepository`. A command that fails validation or execution does not enter history.
 
-`CommandHistory` stores only successfully executed commands in a last-in-first-out stack. `ResultService` creates each command, calls `execute`, and pushes it to the history only after success. Undo peeks the most recent command, calls its `undo` method, and pops it only after a successful rollback.
+`CommandHistory<T extends UndoableCommand>` stores only successfully executed commands in a last-in-first-out stack without depending on a concrete command class. `ResultService` uses a `CommandHistory<RecordMatchResultCommand>`, creates each command, calls `execute`, and pushes it to the history only after success. Undo peeks the most recent command, calls its `undo` method, and pops it only after a successful rollback.
 
 ```mermaid
 classDiagram
     direction LR
 
+    class UndoableCommand {
+        <<interface>>
+        +execute() void
+        +undo() void
+        +isExecuted() boolean
+    }
     class RecordMatchResultCommand {
         -matchId long
         -homeScore int
@@ -253,7 +266,7 @@ classDiagram
     class CommandHistory {
         -history Deque
         +push(command) void
-        +undoLast() RecordMatchResultCommand
+        +undoLast() UndoableCommand
         +hasHistory() boolean
     }
     class ResultService {
@@ -270,12 +283,13 @@ classDiagram
         +undoResult(snapshot) void
     }
 
+    UndoableCommand <|.. RecordMatchResultCommand
     RecordMatchResultCommand --> MatchSnapshot
     RecordMatchResultCommand --> MatchRepository
     ResultService --> RecordMatchResultCommand
     ResultService --> CommandHistory
     ResultService --> MatchRepository
-    CommandHistory --> RecordMatchResultCommand
+    CommandHistory --> UndoableCommand
 ```
 
 ### Alternative considered
@@ -284,7 +298,7 @@ The alternative was to have the service or controller directly update the match 
 
 ### Consequence
 
-Each result action becomes a self-contained object with its own validation, execution, snapshot, and undo. The service layer creates commands but does not manage transaction internals or snapshot details. The CommandHistory provides session-scoped undo without requiring database-level audit tables. The trade-off is additional classes, but each has a single clear responsibility.
+Each result action becomes a self-contained object with its own validation, execution, snapshot, and undo. The service layer creates commands but does not manage transaction internals or snapshot details. The generic `CommandHistory` depends on `UndoableCommand`, so another reversible command can reuse it without changing the history class. It provides session-scoped undo without requiring database-level audit tables. The trade-off is additional types, but each has one clear responsibility.
 
 ### Future benefit
 
