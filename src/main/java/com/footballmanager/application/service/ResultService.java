@@ -16,7 +16,7 @@ public final class ResultService {
     private final MatchRepository matchRepository;
     private final TournamentRepository tournamentRepository;
     private final TeamRepository teamRepository;
-    private final CommandHistory commandHistory;
+    private final CommandHistory<RecordMatchResultCommand> commandHistory;
 
     public ResultService(
             MatchRepository matchRepository,
@@ -26,7 +26,7 @@ public final class ResultService {
         this.matchRepository = Objects.requireNonNull(matchRepository);
         this.tournamentRepository = Objects.requireNonNull(tournamentRepository);
         this.teamRepository = Objects.requireNonNull(teamRepository);
-        this.commandHistory = new CommandHistory();
+        this.commandHistory = new CommandHistory<>();
     }
 
     public MatchDto recordResult(long matchId, int homeScore, int awayScore) {
@@ -51,7 +51,7 @@ public final class ResultService {
         return commandHistory.hasHistory();
     }
 
-    public CommandHistory commandHistory() {
+    public CommandHistory<RecordMatchResultCommand> commandHistory() {
         return commandHistory;
     }
 

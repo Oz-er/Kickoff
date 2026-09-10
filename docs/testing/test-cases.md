@@ -37,4 +37,4 @@ mvn -Dtest=SchedulingServiceIntegrationTest test
 mvn -Dtest=ResultServiceIntegrationTest test
 ```
 
-The final verified full-suite result is 118 tests, 0 failures, 0 errors, and 0 skipped.
+The final verified full-suite result is 119 tests, 0 failures, 0 errors, and 0 skipped.

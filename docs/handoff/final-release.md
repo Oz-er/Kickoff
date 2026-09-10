@@ -8,7 +8,7 @@ All six JavaFX screens are connected. Teams, players, tournament setup, fixture 
 
 - State: `TournamentState`, its four concrete implementations, `TournamentStateResolver`, and `TournamentLifecycleService`
 - Strategy: `ScheduleStrategy`, `RoundRobinScheduleStrategy`, `KnockoutScheduleStrategy`, and `SchedulingService`
-- Command: `RecordMatchResultCommand`, `MatchSnapshot`, `CommandHistory`, and `ResultService`
+- Command: `UndoableCommand`, `RecordMatchResultCommand`, `MatchSnapshot`, `CommandHistory`, and `ResultService`
 
 No additional GoF pattern is claimed.
 
@@ -19,7 +19,7 @@ Close the application, delete only `data/football_manager.db`, and run `mvn java
 ## Verification completed
 
 - JDK 21 Maven build
-- 118 automated tests with no failures, errors, or skips
+- 119 automated tests with no failures, errors, or skips
 - Complete three-team round-robin workflow through persisted Completed status
 - Complete four-team knockout workflow with winner progression through persisted Completed status
 - Persistence verification after reopening the same temporary database

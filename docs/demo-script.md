@@ -35,7 +35,7 @@ Target duration: eight minutes. Each member speaks for four minutes.
 
 - Open Fixtures & Results and record a score.
 - Demonstrate Undo Last Result and a corrected score.
-- Explain `RecordMatchResultCommand`, `MatchSnapshot`, `CommandHistory`, and why failed commands never enter history.
+- Explain `UndoableCommand`, `RecordMatchResultCommand`, `MatchSnapshot`, `CommandHistory`, and why failed commands never enter history.
 - Explain the knockout correction guard when a downstream match is already completed.
 
 ### 5:15–6:15: knockout progression
